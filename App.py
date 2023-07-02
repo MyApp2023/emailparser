@@ -29,7 +29,7 @@ def is_user_locked():
     return False
 
 def get_place_urls(query, num_results):
-    api_key = 'key'
+    api_key = 'AIzaSyAoaazZz0CBQ3RGDNXpfAlYjH3Zei5PPsQ'
     gmaps = googlemaps.Client(key=api_key)
     response = gmaps.places(query=query)
     results = []
@@ -42,8 +42,8 @@ def get_place_urls(query, num_results):
     return results
 
 def get_search_results(query, num_results):
-    api_key = 'key'
-    search_engine_id = 'key'
+    api_key = 'AIzaSyDAZTbZzK8hxaWJ_kLBgs9kwzghp27DImk'
+    search_engine_id = 'b1c551f987ee34dd8'
     url = f'https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}'
     response = requests.get(url)
     data = response.json()
