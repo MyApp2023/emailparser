@@ -110,8 +110,12 @@ username = st.text_input("Enter username:", key=username_key)
 password_key = get_unique_key()
 password = st.text_input("Enter password:", key=password_key, type="password")
 
+# Sign In button
+sign_in_key = get_unique_key()
+sign_in_button_clicked = st.button("Sign In", key=sign_in_key)
+
 # Authenticate user
-if username and password and verify_credentials(username, password):
+if sign_in_button_clicked and username and password and verify_credentials(username, password):
     st.success("Authentication successful!")
     st.info("Please enter your search parameters.")
 
@@ -150,7 +154,7 @@ if username and password and verify_credentials(username, password):
                     st.write(f"- {email}")
         else:
             st.error("Missing API key or search engine ID. Please check the configuration.")
-else:
+elif sign_in_button_clicked:
     if is_user_locked():
         st.error("Too many failed login attempts. Please try again later.")
     elif username or password:
