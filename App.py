@@ -67,7 +67,6 @@ def get_search_results(query, num_results, api_key, search_engine_id):
 
 def print_urls(urls):
     if len(urls) > 0:
-        st.write("\n\n\n-------- URLs --------\n")
         for index, url in enumerate(urls, start=1):
             st.write(f"{index}. {url}\n")
     else:
@@ -143,7 +142,6 @@ if st.session_state.signed_in:
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
             print_urls(urls)
             email_addresses = find_email_addresses(urls)
-            st.write("\n\n\n-------- Email Addresses --------\n")
             for url, email_list in email_addresses.items():
                 st.write(f"\n{url}\n")
                 for email in email_list:
@@ -153,7 +151,6 @@ if st.session_state.signed_in:
             urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
             print_urls(urls)
             email_addresses = find_email_addresses(urls)
-            st.write("\n\n\n-------- Email Addresses --------\n")
             for url, email_list in email_addresses.items():
                 st.write(f"\n{url}\n")
                 for email in email_list:
