@@ -131,11 +131,7 @@ if st.session_state.signed_in:
     num_results_key = get_unique_key()
     num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
 
-    # Search and extract e-mails button
-    extract_emails_button_key = get_unique_key()
-    extract_emails = st.button("Search and extract e-mails", key=extract_emails_button_key)
-
-    if search_query and api_choice and num_results and extract_emails:
+    if search_query and api_choice and num_results:
         if api_choice == '1' and google_maps_api_key:
             st.info("Fetching URLs from Google Places API...")
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
