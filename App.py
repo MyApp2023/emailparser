@@ -3,6 +3,10 @@ import googlemaps
 import requests
 import re
 import hashlib
+import time
+
+MAX_ATTEMPTS = 5
+LOCK_DURATION = 300
 
 def read_config_file():
     config = {}
@@ -14,11 +18,25 @@ def read_config_file():
     return config
 
 def verify_password(password):
-    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin
+    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password == hashed_input
 
-@st.cache
+def lock_user():
+    lock_time = int(time.time()) + LOCK_DURATION
+    with open("lock.txt", "w") as lock_file:
+        lock_file.write(str(lock_time))
+
+def is_user_locked():
+    try:
+        with open("lock.txt", "r") as lock_file:
+            lock_time = int(lock_file.read())
+            if lock_time > int(time.time()):
+                return True
+    except FileNotFoundError:
+        pass
+    return False
+
 def get_place_urls(query, num_results, api_key):
     gmaps = googlemaps.Client(key=api_key)
     response = gmaps.places(query=query)
@@ -31,7 +49,6 @@ def get_place_urls(query, num_results, api_key):
             break
     return results
 
-@st.cache
 def get_search_results(query, num_results, api_key, search_engine_id):
     url = f'https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}'
     response = requests.get(url)
@@ -74,23 +91,37 @@ st.write("|-------------------------------------|")
 st.write("|--------E-mails retrieval Bot--------|")
 st.write("|-------------------------------------|\n")
 
-# Prompt for password input
-password = st.text_input("Enter password:", key="password_input")
-password = password[:30]  # Limit password length to 30 characters
+attempts = 0
+while attempts < MAX_ATTEMPTS:
+    if is_user_locked():
+        lock_time = int(time.time())
+        remaining_time = int((lock_time - int(time.time()) + LOCK_DURATION) / 60)  # Convert remaining time to minutes
+        st.write(f"You have exceeded the maximum number of unsuccessful attempts. Please try again after {remaining_time} minutes.")
+        break
 
-if not verify_password(password):
-    st.write("Invalid password.")
-else:
-    # Prompt for search input
-    api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'))
-    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
-    search_query = st.text_input("Enter the search string:")
+    # Prompt for password input
+    password = st.text_input("Enter password:")
+    password = password[:30]  # Limit password length to 30 characters
 
-    if st.button("Search"):
+    if not verify_password(password):
+        attempts += 1
+        st.write("Invalid password.")
+        if attempts >= MAX_ATTEMPTS:
+            lock_user()
+            st.write("You have exceeded the maximum number of unsuccessful attempts. Your account is locked for 5 minutes.")
+    else:
+        attempts = 0  # Reset attempts on successful password entry
+
+        # Prompt for search input
+        api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'))
+        num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
+        search_query = st.text_input("Enter the search string:")
+
         if api_choice == '1' and google_maps_api_key:
             place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
             print_urls(place_urls)
-            if st.button("Extract e-mails", key="extract_emails_1"):
+            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'))
+            if proceed.lower() == "yes":
                 emails = find_email_addresses(place_urls)
                 if emails:
                     st.write("\n\n\n-------- URLs: Email addresses --------\n")
@@ -104,7 +135,8 @@ else:
         elif api_choice == '2' and google_search_api_key and search_engine_id:
             urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
             print_urls(urls)
-            if st.button("Extract e-mails", key="extract_emails_2"):
+            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'))
+            if proceed.lower() == "yes":
                 emails = find_email_addresses(urls)
                 if emails:
                     st.write("--- URLs: Email addresses ---\n")
@@ -115,4 +147,9 @@ else:
             else:
                 st.write("Extraction skipped.")
 
-st.write("|-------------------------------------|")
+        else:
+            st.write("Invalid choice or missing API keys. Please check the configuration.")
+
+        restart = st.selectbox("Do you want to perform another search?", ('Yes', 'No'))
+        if restart.lower() != "yes":
+            break
