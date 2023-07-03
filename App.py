@@ -3,11 +3,9 @@ import googlemaps
 import requests
 import re
 import hashlib
-import time
 import os
 
 MAX_ATTEMPTS = 5
-LOCK_DURATION = 300
 
 def read_config_file():
     config = {}
@@ -22,21 +20,6 @@ def verify_password(password):
     hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password == hashed_input
-
-
-def lock_user():
-    lock_time = int(time.time()) + LOCK_DURATION
-    with open("lock.txt", "w") as lock_file:
-        lock_file.write(str(lock_time))
-
-def is_user_locked():
-    lock_file_exists = os.path.exists("lock.txt")
-    if lock_file_exists:
-        with open("lock.txt", "r") as lock_file:
-            lock_time = int(lock_file.read())
-            if lock_time > int(time.time()):
-                return True
-    return False
 
 def get_place_urls(query, num_results, api_key):
     gmaps = googlemaps.Client(key=api_key)
@@ -93,49 +76,35 @@ st.write("|      Welcome to Email Parser        |")
 st.write("|-------------------------------------|")
 
 def login():
-    attempts = 0
-    password = ""
     authenticated = False
 
-    while attempts < MAX_ATTEMPTS and not authenticated:
-        if is_user_locked():
-            lock_time = int(time.time())
-            remaining_time = int((lock_time - int(time.time()) + LOCK_DURATION) / 60)  # Convert remaining time to minutes
-            st.write(f"You have exceeded the maximum number of unsuccessful attempts. Please try again after {remaining_time} minutes.")
-            break
-
+    while not authenticated:
         # Prompt for password input
-        password = st.text_input("Enter password:", key=f"password_input_{attempts}")
+        password = st.text_input("Enter password:", type="password", key="password_input")
         password = password[:30]  # Limit password length to 30 characters
 
         if not verify_password(password):
-            attempts += 1
             st.write("Invalid password.")
-            if attempts >= MAX_ATTEMPTS:
-                lock_user()
-                st.write("You have exceeded the maximum number of unsuccessful attempts. Your account is locked for 5 minutes.")
         else:
-            attempts = 0  # Reset attempts on successful password entry
             authenticated = True
 
-    if authenticated:
-        query = st.text_input("Enter your query:")
-        num_results = st.number_input("Enter the number of results to retrieve:", min_value=1, step=1, value=5)
+    query = st.text_input("Enter your query:")
+    num_results = st.number_input("Enter the number of results to retrieve:", min_value=1, step=1, value=5)
 
-        st.write("\nRetrieving place URLs from Google Maps...")
-        place_urls = get_place_urls(query, num_results, google_maps_api_key)
-        st.write("\nRetrieving search URLs from Google Custom Search...")
-        search_urls = get_search_results(query, num_results, google_search_api_key, search_engine_id)
+    st.write("\nRetrieving place URLs from Google Maps...")
+    place_urls = get_place_urls(query, num_results, google_maps_api_key)
+    st.write("\nRetrieving search URLs from Google Custom Search...")
+    search_urls = get_search_results(query, num_results, google_search_api_key, search_engine_id)
 
-        all_urls = place_urls + search_urls
-        print_urls(all_urls)
+    all_urls = place_urls + search_urls
+    print_urls(all_urls)
 
-        st.write("\n\n\n-------- Email Addresses --------\n")
-        email_addresses = find_email_addresses(all_urls)
-        for url, email_list in email_addresses.items():
-            st.write(f"\nURL: {url}")
-            st.write("Emails:")
-            for email in email_list:
-                st.write(email)
+    st.write("\n\n\n-------- Email Addresses --------\n")
+    email_addresses = find_email_addresses(all_urls)
+    for url, email_list in email_addresses.items():
+        st.write(f"\nURL: {url}")
+        st.write("Emails:")
+        for email in email_list:
+            st.write(email)
 
 login()
