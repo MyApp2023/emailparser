@@ -95,7 +95,7 @@ st.title("Email Parser")
 
 # Prompt for password input
 password_key = get_unique_key()
-password = st.text_input("Enter password:", key=password_key)
+password = st.text_input("Please enter password:", key=password_key)
 password = password[:30]  # Limit password length to 30 characters
 
 # Sign in button
@@ -112,7 +112,11 @@ if sign_in and password and verify_password(password):
 
 if st.session_state.signed_in:
     st.success("Authentication successful!")
-    st.info("Please enter your search parameters.")
+    st.text("How many times did you try to e-mail many people with the same request to get the best reply/opinion/proposition? If you simply message one employee, customer, loyer, electrician, contractor, or investor - you are missing out. One shot can be missed, out of 10 shots, couple will definitely work.")
+    st.text("Find the best fit for your task or simply ask a question to multiple people and compare answers or quotes with our tool.")
+    st.text("To contact someone you need an e-mail, but how long does it take you to find an e-mail on website? Probably a minute or two. How about couple websites? Around 5 minutes. What if you need to search through 5, 10, 20, 30, 50 websites? We will do the manual process of looking for websites, keeping track of which ones you visited and going through pages to find contact information.")
+    st.text("Our Bot will help you search in either general google search or in business section through any reasonable number of websites to get e-mails instantly. Simply type a search query, specify number of websites, review them and get e-mails.")
+    st.text("Save your time, let the code do manual work for you!")
 
     # Prompt for search input
     search_query_key = get_unique_key()
