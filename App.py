@@ -25,12 +25,10 @@ def read_config_file():
             config[key] = value
     return config
 
-def verify_credentials(username, password):
-    hashed_username = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
-    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
-    hashed_input_username = hashlib.sha256(username.encode()).hexdigest()
-    hashed_input_password = hashlib.sha256(password.encode()).hexdigest()
-    return hashed_username == hashed_input_username and hashed_password == hashed_input_password
+def verify_password(password):
+    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin
+    hashed_input = hashlib.sha256(password.encode()).hexdigest()
+    return hashed_password == hashed_input
 
 def lock_user():
     lock_time = int(time.time()) + LOCK_DURATION
@@ -100,47 +98,49 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 # Main program
 st.title("Email Parser")
 
-@st.cache_data()
-def authenticate(username, password):
-    if username and password and verify_credentials(username, password):
-        return True
-    return False
-
+# Initialize state
 state = "SIGN_IN"
 
+# Authenticate user
 if state == "SIGN_IN":
-    # Prompt for username and password input
-    username_key = get_unique_key()
+    # Prompt for password input
     password_key = get_unique_key()
-    username = st.text_input("Enter username:", key=username_key)
     password = st.text_input("Enter password:", key=password_key, type="password")
+    password = password[:30]  # Limit password length to 30 characters
 
-    # Check if "Sign In" button is clicked
-    if st.button("Sign In"):
-        # Authenticate user
-        is_authenticated = authenticate(username, password)
-        if is_authenticated:
-            state = "SEARCH_PARAMETERS"
+    # Authenticate user
+    if password and verify_password(password):
+        st.success("Authentication successful!")
+        state = "SEARCH_PARAMETERS"
+        st.info("Please enter your search parameters.")
+    elif password:
+        if is_user_locked():
+            st.error("Too many failed login attempts. Please try again later.")
         else:
-            if is_user_locked():
-                st.error("Too many failed login attempts. Please try again later.")
-            elif username and password:
-                st.warning("Authentication failed. Please try again.")
-                lock_user()
+            st.warning("Authentication failed. Please try again.")
+            lock_user()
 
+# Proceed with search parameters
 if state == "SEARCH_PARAMETERS":
-    st.success("Authentication successful!")
-    st.info("Please enter your search parameters.")
-
     # Prompt for search input
     search_query_key = get_unique_key()
     search_query = st.text_input("Enter the search string:", key=search_query_key)
 
     api_choice_key = get_unique_key()
-    api_choice = st.selectbox("Enter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key=api_choice_key)
+    api_choice = st.selectbox(
+        "Enter '1' to use Google Places API or '2' to use Google Custom Search API:",
+        ('1', '2'),
+        key=api_choice_key
+    )
 
     num_results_key = get_unique_key()
-    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
+    num_results = st.number_input(
+        "How many URLs do you want to get?",
+        min_value=1,
+        step=1,
+        value=1,
+        key=num_results_key
+    )
 
     if search_query and api_choice and num_results:
         if api_choice == '1' and google_maps_api_key:
@@ -165,6 +165,3 @@ if state == "SEARCH_PARAMETERS":
                     st.write(f"- {email}")
         else:
             st.error("Missing API key or search engine ID. Please check the configuration.")
-else:
-    # Reset widget keys to avoid duplicate key issue when rerunning the app
-    widget_counter = 0
