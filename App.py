@@ -72,47 +72,58 @@ st.write("|-------------------------------------|")
 st.write("|--------E-mails retrieval Bot--------|")
 st.write("|-------------------------------------|\n")
 
-# Prompt for password input
-password = st.text_input("Enter password:", type="password")
+# Define application states
+STATE_LOGIN = "login"
+STATE_SEARCH = "search"
 
-if st.button("Login"):
-    if not verify_password(password):
-        st.write("Invalid password.")
-    else:
-        # Prompt for search input
-        api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key="api_choice_input")
-        num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key="num_results_input")
-        search_query = st.text_input("Enter the search string:", key="search_query_input")
+# Initialize state variable
+state = STATE_LOGIN
 
-        if api_choice == '1' and google_maps_api_key:
-            place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
-            print_urls(place_urls)
-            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_choice_input")
-            if proceed.lower() == "yes":
-                emails = find_email_addresses(place_urls)
-                if emails:
-                    st.write("\n\n\n-------- URLs: Email addresses --------\n")
-                    for index, (url, email_list) in enumerate(emails.items(), start=1):
-                        st.write(f"{index}. {url}: {', '.join(email_list)}\n")
-                else:
-                    st.write("No email addresses found.")
-            else:
-                st.write("Extraction skipped.")
+# Main application logic
+if state == STATE_LOGIN:
+    # Prompt for password input
+    password = st.text_input("Enter password:", type="password")
+    password = password[:30]  # Limit password length to 30 characters
 
-        elif api_choice == '2' and google_search_api_key and search_engine_id:
-            urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
-            print_urls(urls)
-            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_choice_input")
-            if proceed.lower() == "yes":
-                emails = find_email_addresses(urls)
-                if emails:
-                    st.write("--- URLs: Email addresses ---\n")
-                    for index, (url, email_list) in enumerate(emails.items(), start=1):
-                        st.write(f"{index}. {url}: {', '.join(email_list)}\n")
-                else:
-                    st.write("No email addresses found.")
-            else:
-                st.write("Extraction skipped.")
-
+    if st.button("Login"):
+        if verify_password(password):
+            state = STATE_SEARCH
         else:
-            st.write("Invalid choice or missing API keys. Please check the configuration.")
+            st.write("Invalid password.")
+
+if state == STATE_SEARCH:
+    # Prompt for search input
+    api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key="api_choice_input")
+    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key="num_results_input")
+    search_query = st.text_input("Enter the search string:", key="search_query_input")
+
+    if api_choice == '1' and google_maps_api_key:
+        place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
+        print_urls(place_urls)
+        proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_choice_input")
+        if proceed.lower() == "yes":
+            emails = find_email_addresses(place_urls)
+            if emails:
+                st.write("\n\n\n-------- URLs: Email addresses --------\n")
+                for index, (url, email_list) in enumerate(emails.items(), start=1):
+                    st.write(f"{index}. {url}: {', '.join(email_list)}\n")
+            else:
+                st.write("No email addresses found.")
+        else:
+            st.write("Extraction skipped.")
+
+    elif api_choice == '2' and google_search_api_key and search_engine_id:
+        urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
+        print_urls(urls)
+        proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_choice_input")
+        if proceed.lower() == "yes":
+            emails = find_email_addresses(urls)
+            if emails:
+                st.write("--- URLs: Email addresses ---\n")
+                for index, (url, email_list) in enumerate(emails.items(), start=1):
+                    st.write(f"{index}. {url}: {', '.join(email_list)}\n")
+            else:
+                st.write("No email addresses found.")
+        else:
+            st.write("Extraction skipped.")
+
