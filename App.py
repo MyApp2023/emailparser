@@ -100,7 +100,7 @@ while attempts < MAX_ATTEMPTS:
         break
 
     # Prompt for password input
-    password = st.text_input("Enter password:")
+    password = st.text_input("Enter password:", key="password_input")
     password = password[:30]  # Limit password length to 30 characters
 
     if not verify_password(password):
@@ -113,14 +113,14 @@ while attempts < MAX_ATTEMPTS:
         attempts = 0  # Reset attempts on successful password entry
 
         # Prompt for search input
-        api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'))
-        num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
-        search_query = st.text_input("Enter the search string:")
+        api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key="api_choice_input")
+        num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key="num_results_input")
+        search_query = st.text_input("Enter the search string:", key="search_query_input")
 
         if api_choice == '1' and google_maps_api_key:
             place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
             print_urls(place_urls)
-            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'))
+            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_input")
             if proceed.lower() == "yes":
                 emails = find_email_addresses(place_urls)
                 if emails:
@@ -135,7 +135,7 @@ while attempts < MAX_ATTEMPTS:
         elif api_choice == '2' and google_search_api_key and search_engine_id:
             urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
             print_urls(urls)
-            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'))
+            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_input")
             if proceed.lower() == "yes":
                 emails = find_email_addresses(urls)
                 if emails:
@@ -150,6 +150,6 @@ while attempts < MAX_ATTEMPTS:
         else:
             st.write("Invalid choice or missing API keys. Please check the configuration.")
 
-        restart = st.selectbox("Do you want to perform another search?", ('Yes', 'No'))
+        restart = st.selectbox("Do you want to perform another search?", ('Yes', 'No'), key="restart_input")
         if restart.lower() != "yes":
             break
