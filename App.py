@@ -89,6 +89,16 @@ def find_email_addresses(urls):
             st.write(f"Error retrieving content from {url}: {e}")
     return email_addresses
 
+
+
+
+# Debugging: Print the values of API keys and search engine ID
+st.write("API keys and search engine ID:")
+st.write(f"Google Maps API Key: {google_maps_api_key}")
+st.write(f"Custom Search API Key: {custom_search_api_key}")
+st.write(f"Search Engine ID: {search_engine_id}")
+
+
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
 google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
