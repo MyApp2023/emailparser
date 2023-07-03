@@ -4,6 +4,7 @@ import requests
 import re
 import hashlib
 import time
+import os
 
 MAX_ATTEMPTS = 5
 LOCK_DURATION = 300
