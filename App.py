@@ -133,8 +133,3 @@ while attempts < MAX_ATTEMPTS:
 
             else:
                 st.write("Invalid choice or missing API keys. Please check the configuration.")
-
-        restart = st.button("Enter Another Search")
-        if not restart:
-            st.write("Thank you for using our bot!")
-            break
