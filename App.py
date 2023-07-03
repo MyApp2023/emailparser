@@ -89,9 +89,8 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 st.write("|-------------------------------------|")
 st.write("|--------E-mails retrieval Bot--------|")
-st.write("|-------------------------------------|")
+st.write("|-------------------------------------|\n")
 
-st.write("Please enter your password to proceed.")
 attempts = 0
 while attempts < MAX_ATTEMPTS:
     if is_user_locked():
@@ -99,13 +98,14 @@ while attempts < MAX_ATTEMPTS:
         remaining_time = int((lock_time - int(time.time()) + LOCK_DURATION) / 60)  # Convert remaining time to minutes
         st.write(f"You have exceeded the maximum number of unsuccessful attempts. Please try again after {remaining_time} minutes.")
         break
-try:
-  
-    password = st.text_input("Enter password:", key="password_input")
-except st.DuplicateWidgetID:
-    pass
-    #######DuplicateWidgetID: There are multiple widgets with the same key='password_input'.#########
-    #######To fix this, please make sure that the key argument is unique for each widget you create.#########
+
+    # Prompt for password input
+    try:
+        password = st.text_input("Enter password:", key="password_input")
+    except st.DuplicateWidgetID:
+        pass
+
+    password = password[:30]  # Limit password length to 30 characters
 
     if not verify_password(password):
         attempts += 1
@@ -119,12 +119,17 @@ except st.DuplicateWidgetID:
         # Prompt for search input
         api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key="api_choice_input")
         num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key="num_results_input")
-        search_query = st.text_input("Enter the search string:", key="search_query_input")
 
-        if st.button("Search and Extract e-mails"):
-            if api_choice == '1' and google_maps_api_key:
-                place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
-                print_urls(place_urls)
+        try:
+            search_query = st.text_input("Enter the search string:", key="search_query_input")
+        except st.DuplicateWidgetID:
+            pass
+
+        if api_choice == '1' and google_maps_api_key:
+            place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
+            print_urls(place_urls)
+            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_input")
+            if proceed.lower() == "yes":
                 emails = find_email_addresses(place_urls)
                 if emails:
                     st.write("\n\n\n-------- URLs: Email addresses --------\n")
@@ -132,10 +137,14 @@ except st.DuplicateWidgetID:
                         st.write(f"{index}. {url}: {', '.join(email_list)}\n")
                 else:
                     st.write("No email addresses found.")
+            else:
+                st.write("Extraction skipped.")
 
-            elif api_choice == '2' and google_search_api_key and search_engine_id:
-                urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
-                print_urls(urls)
+        elif api_choice == '2' and google_search_api_key and search_engine_id:
+            urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
+            print_urls(urls)
+            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_input")
+            if proceed.lower() == "yes":
                 emails = find_email_addresses(urls)
                 if emails:
                     st.write("--- URLs: Email addresses ---\n")
@@ -143,10 +152,13 @@ except st.DuplicateWidgetID:
                         st.write(f"{index}. {url}: {', '.join(email_list)}\n")
                 else:
                     st.write("No email addresses found.")
-
             else:
-                st.write("Invalid choice or missing API keys. Please check the configuration.")
+                st.write("Extraction skipped.")
 
-        break
+        else:
+            st.write("Invalid choice or missing API keys. Please check the configuration.")
 
-st.write("Thank you for using our bot!")
+        restart = st.button("Search Again")
+        if not restart:
+            st.write("Thank you for using our bot!")
+            break
