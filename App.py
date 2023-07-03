@@ -8,7 +8,7 @@ import time
 MAX_ATTEMPTS = 10
 LOCK_DURATION = 10
 
-@st.cache(allow_output_mutation=True)
+@st.cache_data()
 def read_config_file():
     config = {}
     with open("config.txt", "r") as file:
@@ -38,7 +38,7 @@ def is_user_locked():
         pass
     return False
 
-@st.cache
+@st.cache_resource(allow_output_mutation=True)
 def get_place_urls(query, num_results, api_key):
     gmaps = googlemaps.Client(key=api_key)
     response = gmaps.places(query=query)
@@ -51,7 +51,7 @@ def get_place_urls(query, num_results, api_key):
             break
     return results
 
-@st.cache
+@st.cache_resource(allow_output_mutation=True)
 def get_search_results(query, num_results, api_key, search_engine_id):
     url = f'https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}'
     response = requests.get(url)
@@ -94,17 +94,14 @@ st.write("|-------------------------------------|")
 st.write("|--------E-mails retrieval Bot--------|")
 st.write("|-------------------------------------|\n")
 
-state = st.session_state.get('state', {})
-if not state:
-    state['attempts'] = 0
-    state['password'] = ''
-    state['api_choice'] = ''
-    state['num_results'] = 1
-    state['search_query'] = ''
-    state['place_urls'] = []
-    state['urls'] = []
+state = st.session_state.get('state', {
+    'search_query': '',
+    'place_urls': [],
+    'urls': []
+})
 
-while state['attempts'] < MAX_ATTEMPTS:
+attempts = 0
+while attempts < MAX_ATTEMPTS:
     if is_user_locked():
         lock_time = int(time.time())
         remaining_time = int((lock_time - int(time.time()) + LOCK_DURATION) / 60)  # Convert remaining time to minutes
@@ -112,49 +109,52 @@ while state['attempts'] < MAX_ATTEMPTS:
         break
 
     # Prompt for password input
-    password = st.text_input("Enter password:", value=state['password'])
-    state['password'] = password[:30]  # Limit password length to 30 characters
+    password = st.text_input("Enter password:")
+    password = password[:30]  # Limit password length to 30 characters
 
-    if not verify_password(state['password']):
-        state['attempts'] += 1
+    if not verify_password(password):
+        attempts += 1
         st.write("Invalid password.")
-        if state['attempts'] >= MAX_ATTEMPTS:
+        if attempts >= MAX_ATTEMPTS:
             lock_user()
             st.write("You have exceeded the maximum number of unsuccessful attempts. Your account is locked for 5 minutes.")
     else:
-        state['attempts'] = 0  # Reset attempts on successful password entry
+        attempts = 0  # Reset attempts on successful password entry
 
         # Prompt for search input
-        state['api_choice'] = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), index=state['api_choice'])
-        state['num_results'] = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=state['num_results'])
-        state['search_query'] = st.text_input("Enter the search string:", value=state['search_query'])
-        search_button = st.button("Search")
+        search_button_pressed = False
+        if st.button("Search"):
+            state['search_query'] = st.text_input("Enter the search string:")
+            search_button_pressed = True
 
-        if search_button:
-            if state['api_choice'] == '1' and google_maps_api_key:
-                state['place_urls'] = get_place_urls(state['search_query'], state['num_results'], google_maps_api_key)
+        if search_button_pressed:
+            api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'))
+            num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
+
+            if api_choice == '1' and google_maps_api_key:
+                state['place_urls'] = get_place_urls(state['search_query'], num_results, google_maps_api_key)
                 print_urls(state['place_urls'])
-                extract_button = st.button("Extract")
-                if extract_button:
-                    emails = find_email_addresses(state['place_urls'])
-                    if emails:
+                proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'))
+                if proceed.lower() == "yes":
+                    state['emails'] = find_email_addresses(state['place_urls'])
+                    if state['emails']:
                         st.write("\n\n\n-------- URLs: Email addresses --------\n")
-                        for index, (url, email_list) in enumerate(emails.items(), start=1):
+                        for index, (url, email_list) in enumerate(state['emails'].items(), start=1):
                             st.write(f"{index}. {url}: {', '.join(email_list)}\n")
                     else:
                         st.write("No email addresses found.")
                 else:
                     st.write("Extraction skipped.")
 
-            elif state['api_choice'] == '2' and google_search_api_key and search_engine_id:
-                state['urls'] = get_search_results(state['search_query'], state['num_results'], google_search_api_key, search_engine_id)
+            elif api_choice == '2' and google_search_api_key and search_engine_id:
+                state['urls'] = get_search_results(state['search_query'], num_results, google_search_api_key, search_engine_id)
                 print_urls(state['urls'])
-                extract_button = st.button("Extract")
-                if extract_button:
-                    emails = find_email_addresses(state['urls'])
-                    if emails:
+                proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'))
+                if proceed.lower() == "yes":
+                    state['emails'] = find_email_addresses(state['urls'])
+                    if state['emails']:
                         st.write("--- URLs: Email addresses ---\n")
-                        for index, (url, email_list) in enumerate(emails.items(), start=1):
+                        for index, (url, email_list) in enumerate(state['emails'].items(), start=1):
                             st.write(f"{index}. {url}: {', '.join(email_list)}\n")
                     else:
                         st.write("No email addresses found.")
@@ -164,12 +164,10 @@ while state['attempts'] < MAX_ATTEMPTS:
             else:
                 st.write("Invalid choice or missing API keys. Please check the configuration.")
 
-            state['search_query'] = ''
-            state['place_urls'] = []
-            state['urls'] = []
-
         restart = st.selectbox("Do you want to perform another search?", ('Yes', 'No'))
         if restart.lower() != "yes":
             break
 
+# Save the state
 st.session_state['state'] = state
+
