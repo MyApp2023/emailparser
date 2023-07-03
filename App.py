@@ -98,6 +98,11 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 # Main program
 st.title("Email Parser")
 
+# Prompt for password input
+password_key = get_unique_key()
+password = st.text_input("Enter password:", key=password_key)
+password = password[:30]  # Limit password length to 30 characters
+
 # Sign in button
 sign_in_button_key = get_unique_key()
 sign_in = st.button("Sign In", key=sign_in_button_key)
@@ -107,8 +112,8 @@ if 'signed_in' not in st.session_state:
     st.session_state.signed_in = False
 
 # Authenticate user
-if sign_in and not st.session_state.signed_in:
-    st.session_state.signed_in = verify_password("admin")  # Replace "admin" with your desired password
+if sign_in and password and verify_password(password):
+    st.session_state.signed_in = True
 
 if st.session_state.signed_in:
     st.success("Authentication successful!")
@@ -158,7 +163,7 @@ if st.session_state.signed_in:
 else:
     if is_user_locked():
         st.error("Too many failed login attempts. Please try again later.")
-    elif sign_in:
+    elif sign_in and password:
         st.warning("Authentication failed. Please try again.")
         lock_user()
 
