@@ -95,6 +95,7 @@ google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 # Main program
+# Main program
 st.title("Email Parser")
 
 # Prompt for password input
@@ -140,21 +141,21 @@ if st.session_state.signed_in:
         if api_choice == '1' and google_maps_api_key:
             st.info("Fetching URLs from Google Places API...")
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
-            print_urls(urls)
             email_addresses = find_email_addresses(urls)
             for url, email_list in email_addresses.items():
-                st.write(f"\n{url}\n")
-                for email in email_list:
-                    st.write(f"- {email}")
+                if email_list != ['Email not found']:
+                    st.write(f"\n{url}\n")
+                    for email in email_list:
+                        st.write(f"- {email}")
         elif api_choice == '2' and google_search_api_key and search_engine_id:
             st.info("Fetching URLs from Google Custom Search API...")
             urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
-            print_urls(urls)
             email_addresses = find_email_addresses(urls)
             for url, email_list in email_addresses.items():
-                st.write(f"\n{url}\n")
-                for email in email_list:
-                    st.write(f"- {email}")
+                if email_list != ['Email not found']:
+                    st.write(f"\n{url}\n")
+                    for email in email_list:
+                        st.write(f"- {email}")
         else:
             st.error("Missing API key or search engine ID. Please check the configuration.")
 else:
