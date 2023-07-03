@@ -116,6 +116,7 @@ while attempts < MAX_ATTEMPTS and not authenticated:
         authenticated = True
 
 if authenticated:
+    attempts = 0  # Reset attempts after successful authentication
     # Prompt for search input
     api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'))
     num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
