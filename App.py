@@ -25,10 +25,12 @@ def read_config_file():
             config[key] = value
     return config
 
-def verify_password(password):
+def verify_credentials(username, password):
+    hashed_username = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
     hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
-    hashed_input = hashlib.sha256(password.encode()).hexdigest()
-    return hashed_password == hashed_input
+    hashed_input_username = hashlib.sha256(username.encode()).hexdigest()
+    hashed_input_password = hashlib.sha256(password.encode()).hexdigest()
+    return hashed_username == hashed_input_username and hashed_password == hashed_input_password
 
 def lock_user():
     lock_time = int(time.time()) + LOCK_DURATION
@@ -98,13 +100,14 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 # Main program
 st.title("Email Parser")
 
-# Prompt for password input
+# Prompt for username and password input
+username_key = get_unique_key()
 password_key = get_unique_key()
-password = st.text_input("Enter password:", key=password_key)
-password = password[:30]  # Limit password length to 30 characters
+username = st.text_input("Enter username:", key=username_key)
+password = st.text_input("Enter password:", key=password_key, type="password")
 
 # Authenticate user
-if password and verify_password(password):
+if username and password and verify_credentials(username, password):
     st.success("Authentication successful!")
     st.info("Please enter your search parameters.")
     
@@ -144,10 +147,9 @@ if password and verify_password(password):
 else:
     if is_user_locked():
         st.error("Too many failed login attempts. Please try again later.")
-    elif password:
+    elif username and password:
         st.warning("Authentication failed. Please try again.")
         lock_user()
 
 # Reset widget keys to avoid duplicate key issue when rerunning the app
 widget_counter = 0
-
