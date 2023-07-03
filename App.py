@@ -117,8 +117,8 @@ if st.session_state.signed_in:
 
     api_choice_key = get_unique_key()
     api_choice = st.selectbox(
-        "Enter '1' to use Google Places API or '2' to use Google Custom Search API:",
-        ('1', '2'),
+        "Select to use Google Businesses or Google Search:",
+        ('Google Businesses', 'Google Search'),
         key=api_choice_key
     )
 
@@ -130,20 +130,18 @@ if st.session_state.signed_in:
     search_emails = st.button("Search and extract e-mails", key=search_emails_button_key)
 
     if search_query and api_choice and num_results and search_emails:
-        if api_choice == '1' and google_maps_api_key:
-            st.info("Fetching URLs from Google Places API...")
+        if api_choice == 'Google Businesses' and google_maps_api_key:
+            st.info("Fetching URLs and e-mails using Google Places API...")
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
             email_addresses = find_email_addresses(urls)
-            st.write("\n\n\n-------- Email Addresses --------\n")
             for url, email_list in email_addresses.items():
                 st.write(f"\n{url}\n")
                 for email in email_list:
                     st.write(f"- {email}")
-        elif api_choice == '2' and google_search_api_key and search_engine_id:
-            st.info("Fetching URLs from Google Custom Search API...")
+        elif api_choice == 'Google Search' and google_search_api_key and search_engine_id:
+            st.info("Fetching URLs and e-mails using Google Custom Search API...")
             urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
             email_addresses = find_email_addresses(urls)
-            st.write("\n\n\n-------- Email Addresses --------\n")
             for url, email_list in email_addresses.items():
                 st.write(f"\n{url}\n")
                 for email in email_list:
