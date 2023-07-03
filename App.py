@@ -20,9 +20,9 @@ def read_config_file():
     config = {}
     with open("config.txt", "r") as file:
         lines = file.readlines()
-            for line in lines:
-                key, value = line.strip().split("=")
-                config[key] = value
+        for line in lines:
+            key, value = line.strip().split("=")
+            config[key] = value
     return config
 
 def verify_password(password):
