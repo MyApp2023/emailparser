@@ -99,10 +99,13 @@ while attempts < MAX_ATTEMPTS:
         remaining_time = int((lock_time - int(time.time()) + LOCK_DURATION) / 60)  # Convert remaining time to minutes
         st.write(f"You have exceeded the maximum number of unsuccessful attempts. Please try again after {remaining_time} minutes.")
         break
-
-    # Prompt for password input
+try:
+  
     password = st.text_input("Enter password:", key="password_input")
-    password = password[:30]  # Limit password length to 30 characters
+except st.DuplicateWidgetID:
+    pass
+    #######DuplicateWidgetID: There are multiple widgets with the same key='password_input'.#########
+    #######To fix this, please make sure that the key argument is unique for each widget you create.#########
 
     if not verify_password(password):
         attempts += 1
