@@ -92,7 +92,7 @@ while attempts < MAX_ATTEMPTS:
         break
 
     # Prompt for password input
-    password = st.text_input("Enter password:", key="password_input")
+    password = st.text_input("Enter password:")
     password = password[:30]  # Limit password length to 30 characters
 
     if not verify_password(password):
@@ -107,7 +107,7 @@ while attempts < MAX_ATTEMPTS:
         # Prompt for search input
         api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key="api_choice_input")
         num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key="num_results_input")
-        search_query = st.text_input("Enter the search string:", key="search_query_input")
+        search_query = st.text_input("Enter the search string:")
         search_button = st.button("Search and Extract Emails")
 
         if search_button:
@@ -133,3 +133,8 @@ while attempts < MAX_ATTEMPTS:
 
             else:
                 st.write("Invalid choice or missing API keys. Please check the configuration.")
+
+        restart = st.button("Enter Another Search")
+        if not restart:
+            st.write("Thank you for using our bot!")
+            break
