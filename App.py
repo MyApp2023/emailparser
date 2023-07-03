@@ -16,19 +16,25 @@ def get_unique_key():
     widget_counter += 1
     return f"widget_{widget_counter}"
 
-@st.cache
+def read_config_file():
+    config = {}
+    with open("config.txt", "r") as file:
+        lines = file.readlines()
+        for line in lines:
+            key, value = line.strip().split("=")
+            config[key] = value
+    return config
+
 def verify_password(password):
     hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password == hashed_input
 
-@st.cache
 def lock_user():
     lock_time = int(time.time()) + LOCK_DURATION
     with open("lock.txt", "w") as lock_file:
         lock_file.write(str(lock_time))
 
-@st.cache
 def is_user_locked():
     try:
         with open("lock.txt", "r") as lock_file:
@@ -39,7 +45,6 @@ def is_user_locked():
         pass
     return False
 
-@st.cache
 def get_place_urls(query, num_results, api_key):
     gmaps = googlemaps.Client(key=api_key)
     response = gmaps.places(query=query)
@@ -52,7 +57,6 @@ def get_place_urls(query, num_results, api_key):
             break
     return results
 
-@st.cache
 def get_search_results(query, num_results, api_key, search_engine_id):
     url = f'https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}'
     response = requests.get(url)
@@ -61,7 +65,14 @@ def get_search_results(query, num_results, api_key, search_engine_id):
     results = [item['link'] for item in items[:num_results]]
     return results
 
-@st.cache
+def print_urls(urls):
+    if len(urls) > 0:
+        st.write("\n\n\n-------- URLs --------\n")
+        for index, url in enumerate(urls, start=1):
+            st.write(f"{index}. {url}\n")
+    else:
+        st.write("No results found.")
+
 def find_email_addresses(urls):
     email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
     email_addresses = {}
@@ -78,16 +89,6 @@ def find_email_addresses(urls):
             st.write(f"Error retrieving content from {url}: {e}")
     return email_addresses
 
-@st.cache(allow_output_mutation=True)
-def read_config_file():
-    config = {}
-    with open("config.txt", "r") as file:
-        lines = file.readlines()
-        for line in lines:
-            key, value = line.strip().split("=")
-            config[key] = value
-    return config
-
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
 google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
@@ -102,21 +103,29 @@ password_key = get_unique_key()
 password = st.text_input("Enter password:", key=password_key)
 password = password[:30]  # Limit password length to 30 characters
 
+# Sign in button
+sign_in_button_key = get_unique_key()
+sign_in = st.button("Sign In", key=sign_in_button_key)
+
 # Authenticate user
-if password and verify_password(password):
+if sign_in and password and verify_password(password):
     st.success("Authentication successful!")
     st.info("Please enter your search parameters.")
-    
+
     # Prompt for search input
     search_query_key = get_unique_key()
     search_query = st.text_input("Enter the search string:", key=search_query_key)
-    
+
     api_choice_key = get_unique_key()
-    api_choice = st.selectbox("Enter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key=api_choice_key)
-    
+    api_choice = st.selectbox(
+        "Enter '1' to use Google Places API or '2' to use Google Custom Search API:",
+        ('1', '2'),
+        key=api_choice_key
+    )
+
     num_results_key = get_unique_key()
     num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
-    
+
     if search_query and api_choice and num_results:
         if api_choice == '1' and google_maps_api_key:
             st.info("Fetching URLs from Google Places API...")
@@ -143,9 +152,10 @@ if password and verify_password(password):
 else:
     if is_user_locked():
         st.error("Too many failed login attempts. Please try again later.")
-    elif password:
+    elif sign_in and password:
         st.warning("Authentication failed. Please try again.")
         lock_user()
 
 # Reset widget keys to avoid duplicate key issue when rerunning the app
 widget_counter = 0
+
