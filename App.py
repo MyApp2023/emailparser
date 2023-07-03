@@ -91,64 +91,50 @@ st.write("|-------------------------------------|")
 st.write("|--------E-mails retrieval Bot--------|")
 st.write("|-------------------------------------|")
 
-attempts = 0
-password = ""
-authenticated = False
-while attempts < MAX_ATTEMPTS and not authenticated:
-    if is_user_locked():
-        lock_time = int(time.time())
-        remaining_time = int((lock_time - int(time.time()) + LOCK_DURATION) / 60)  # Convert remaining time to minutes
-        st.write(f"You have exceeded the maximum number of unsuccessful attempts. Please try again after {remaining_time} minutes.")
-        break
+def login():
+    attempts = 0
+    password = ""
+    authenticated = False
 
-    # Prompt for password input
-    password = st.text_input("Enter password:", key="password_input_" + str(attempts))
-    password = password[:30]  # Limit password length to 30 characters
+    while attempts < MAX_ATTEMPTS and not authenticated:
+        if is_user_locked():
+            lock_time = int(time.time())
+            remaining_time = int((lock_time - int(time.time()) + LOCK_DURATION) / 60)  # Convert remaining time to minutes
+            st.write(f"You have exceeded the maximum number of unsuccessful attempts. Please try again after {remaining_time} minutes.")
+            break
 
-    if not verify_password(password):
-        attempts += 1
-        st.write("Invalid password.")
-        if attempts >= MAX_ATTEMPTS:
-            lock_user()
-            st.write("You have exceeded the maximum number of unsuccessful attempts. Your account is locked for 5 minutes.")
-    else:
-        attempts = 0  # Reset attempts on successful password entry
-        authenticated = True
+        # Prompt for password input
+        password = st.text_input("Enter password:", key="password_input")
+        password = password[:30]  # Limit password length to 30 characters
 
-if authenticated:
-    attempts = 0  # Reset attempts after successful authentication
-    # Prompt for search input
-    api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'))
-    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
-    search_query = st.text_input("Enter the search string:")
-    search_button = st.button("Search")
+        if not verify_password(password):
+            attempts += 1
+            st.write("Invalid password.")
+            if attempts >= MAX_ATTEMPTS:
+                lock_user()
+                st.write("You have exceeded the maximum number of unsuccessful attempts. Your account is locked for 5 minutes.")
+        else:
+            attempts = 0  # Reset attempts on successful password entry
+            authenticated = True
 
-    if search_button:
-        if api_choice == '1' and google_maps_api_key:
-            place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
-            print_urls(place_urls)
-            extract_emails = st.button("Extract e-mails")
-            if extract_emails:
-                emails = find_email_addresses(place_urls)
-                if emails:
-                    st.write("\n\n\n-------- URLs: Email addresses --------\n")
-                    for index, (url, email_list) in enumerate(emails.items(), start=1):
-                        st.write(f"{index}. {url}: {', '.join(email_list)}\n")
-                else:
-                    st.write("No email addresses found.")
+    if authenticated:
+        query = st.text_input("Enter your query:")
+        num_results = st.number_input("Enter the number of results to retrieve:", min_value=1, step=1, value=5)
 
-        elif api_choice == '2' and google_search_api_key and search_engine_id:
-            urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
-            print_urls(urls)
-            extract_emails = st.button("Extract e-mails")
-            if extract_emails:
-                emails = find_email_addresses(urls)
-                if emails:
-                    st.write("--- URLs: Email addresses ---\n")
-                    for index, (url, email_list) in enumerate(emails.items(), start=1):
-                        st.write(f"{index}. {url}: {', '.join(email_list)}\n")
-                else:
-                    st.write("No email addresses found.")
+        st.write("\nRetrieving place URLs from Google Maps...")
+        place_urls = get_place_urls(query, num_results, google_maps_api_key)
+        st.write("\nRetrieving search URLs from Google Custom Search...")
+        search_urls = get_search_results(query, num_results, google_search_api_key, search_engine_id)
 
-else:
-    st.stop()
+        all_urls = place_urls + search_urls
+        print_urls(all_urls)
+
+        st.write("\n\n\n-------- Email Addresses --------\n")
+        email_addresses = find_email_addresses(all_urls)
+        for url, email_list in email_addresses.items():
+            st.write(f"\nURL: {url}")
+            st.write("Emails:")
+            for email in email_list:
+                st.write(email)
+
+login()
