@@ -4,6 +4,7 @@ import requests
 import re
 import hashlib
 import time
+from streamlit import SessionState
 
 MAX_ATTEMPTS = 10
 LOCK_DURATION = 10
@@ -95,6 +96,9 @@ google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
 google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
+# Initialize SessionState
+state = SessionState.get(password="", signed_in=False)
+
 # Main program
 st.title("Email Parser")
 
@@ -109,6 +113,9 @@ sign_in = st.button("Sign In", key=sign_in_button_key)
 
 # Authenticate user
 if sign_in and password and verify_password(password):
+    state.signed_in = True
+
+if state.signed_in:
     st.success("Authentication successful!")
     st.info("Please enter your search parameters.")
 
@@ -158,4 +165,3 @@ else:
 
 # Reset widget keys to avoid duplicate key issue when rerunning the app
 widget_counter = 0
-
