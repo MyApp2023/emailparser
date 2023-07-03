@@ -20,9 +20,9 @@ def read_config_file():
     config = {}
     with open("config.txt", "r") as file:
         lines = file.readlines()
-        for line in lines:
-            key, value = line.strip().split("=")
-            config[key] = value
+            for line in lines:
+                key, value = line.strip().split("=")
+                config[key] = value
     return config
 
 def verify_password(password):
@@ -133,7 +133,11 @@ if st.session_state.signed_in:
     num_results_key = get_unique_key()
     num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
 
-    if search_query and api_choice and num_results:
+    # Search and extract e-mails button
+    search_emails_button_key = get_unique_key()
+    search_emails = st.button("Search and extract e-mails", key=search_emails_button_key)
+
+    if search_query and api_choice and num_results and search_emails:
         if api_choice == '1' and google_maps_api_key:
             st.info("Fetching URLs from Google Places API...")
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
