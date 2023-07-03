@@ -18,6 +18,7 @@ def verify_password(password):
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password == hashed_input
 
+@st.cache
 def get_place_urls(query, num_results, api_key):
     gmaps = googlemaps.Client(key=api_key)
     response = gmaps.places(query=query)
@@ -30,6 +31,7 @@ def get_place_urls(query, num_results, api_key):
             break
     return results
 
+@st.cache
 def get_search_results(query, num_results, api_key, search_engine_id):
     url = f'https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}'
     response = requests.get(url)
