@@ -7,6 +7,7 @@ import time
 
 MAX_ATTEMPTS = 10
 LOCK_DURATION = 10
+MAX_URLS = 50
 
 # Counter for generating unique widget keys
 widget_counter = 0
@@ -55,7 +56,7 @@ def get_place_urls(query, num_results, api_key):
             results.append(place_details['result']['website'])
         if len(results) == num_results:
             break
-    return results
+    return results[:num_results]
 
 def get_search_results(query, num_results, api_key, search_engine_id):
     url = f'https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}'
@@ -63,12 +64,12 @@ def get_search_results(query, num_results, api_key, search_engine_id):
     data = response.json()
     items = data.get('items', [])
     results = [item['link'] for item in items[:num_results]]
-    return results
+    return results[:num_results]
 
 def find_email_addresses(urls):
     email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
     email_addresses = {}
-    for url in urls:
+    for i, url in enumerate(urls, start=1):
         try:
             response = requests.get(url)
             if response.status_code == 200:
@@ -79,6 +80,8 @@ def find_email_addresses(urls):
                     email_addresses[url] = ['Email not found']  # Add placeholder for email not found
         except requests.exceptions.RequestException as e:
             st.write(f"Error retrieving content from {url}: {e}")
+        if i == MAX_URLS:
+            break
     return email_addresses
 
 # Read API keys and search engine ID from config.txt
@@ -123,7 +126,7 @@ if st.session_state.signed_in:
     )
 
     num_results_key = get_unique_key()
-    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
+    num_results = st.number_input("How many URLs do you want to get?", min_value=1, max_value=MAX_URLS, step=1, value=1, key=num_results_key)
 
     # Search and extract e-mails button
     search_emails_button_key = get_unique_key()
@@ -134,16 +137,16 @@ if st.session_state.signed_in:
             st.info("Fetching URLs and e-mails using Google Places API...")
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
             email_addresses = find_email_addresses(urls)
-            for url, email_list in email_addresses.items():
-                st.write(f"\n{url}\n")
+            for i, (url, email_list) in enumerate(email_addresses.items(), start=1):
+                st.write(f"\n{i}. {url}\n")
                 for email in email_list:
                     st.write(f"- {email}")
         elif api_choice == 'Google Search' and google_search_api_key and search_engine_id:
             st.info("Fetching URLs and e-mails using Google Custom Search API...")
             urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
             email_addresses = find_email_addresses(urls)
-            for url, email_list in email_addresses.items():
-                st.write(f"\n{url}\n")
+            for i, (url, email_list) in enumerate(email_addresses.items(), start=1):
+                st.write(f"\n{i}. {url}\n")
                 for email in email_list:
                     st.write(f"- {email}")
         else:
