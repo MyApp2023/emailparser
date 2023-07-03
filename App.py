@@ -108,30 +108,33 @@ while attempts < MAX_ATTEMPTS:
         api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key="api_choice_input")
         num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key="num_results_input")
         search_query = st.text_input("Enter the search string:", key="search_query_input")
+        search_button = st.button("Search and Extract Emails")
 
-        if api_choice == '1' and google_maps_api_key:
-            place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
-            emails = find_email_addresses(place_urls)
-            if emails:
-                st.write("\n\n\n-------- URLs: Email addresses --------\n")
-                for index, (url, email_list) in enumerate(emails.items(), start=1):
-                    st.write(f"{index}. {url}: {', '.join(email_list)}\n")
+        if search_button:
+            if api_choice == '1' and google_maps_api_key:
+                place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
+                emails = find_email_addresses(place_urls)
+                if emails:
+                    st.write("\n\n\n-------- URLs: Email addresses --------\n")
+                    for index, (url, email_list) in enumerate(emails.items(), start=1):
+                        st.write(f"{index}. {url}: {', '.join(email_list)}\n")
+                else:
+                    st.write("No email addresses found.")
+
+            elif api_choice == '2' and google_search_api_key and search_engine_id:
+                urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
+                emails = find_email_addresses(urls)
+                if emails:
+                    st.write("--- URLs: Email addresses ---\n")
+                    for index, (url, email_list) in enumerate(emails.items(), start=1):
+                        st.write(f"{index}. {url}: {', '.join(email_list)}\n")
+                else:
+                    st.write("No email addresses found.")
+
             else:
-                st.write("No email addresses found.")
+                st.write("Invalid choice or missing API keys. Please check the configuration.")
 
-        elif api_choice == '2' and google_search_api_key and search_engine_id:
-            urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
-            emails = find_email_addresses(urls)
-            if emails:
-                st.write("--- URLs: Email addresses ---\n")
-                for index, (url, email_list) in enumerate(emails.items(), start=1):
-                    st.write(f"{index}. {url}: {', '.join(email_list)}\n")
-            else:
-                st.write("No email addresses found.")
+            restart = st.selectbox("Do you want to perform another search?", ('Yes', 'No'), key="restart_input")
+            if restart.lower() != "yes":
+                break
 
-        else:
-            st.write("Invalid choice or missing API keys. Please check the configuration.")
-
-        restart = st.selectbox("Do you want to perform another search?", ('Yes', 'No'), key="restart_input")
-        if restart.lower() != "yes":
-            break
