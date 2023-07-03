@@ -4,7 +4,6 @@ import requests
 import re
 import hashlib
 import time
-from streamlit import SessionState
 
 MAX_ATTEMPTS = 10
 LOCK_DURATION = 10
@@ -27,7 +26,7 @@ def read_config_file():
     return config
 
 def verify_password(password):
-    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin
+    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password == hashed_input
 
@@ -96,9 +95,6 @@ google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
 google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
-# Initialize SessionState
-state = SessionState.get(password="", signed_in=False)
-
 # Main program
 st.title("Email Parser")
 
@@ -111,11 +107,14 @@ password = password[:30]  # Limit password length to 30 characters
 sign_in_button_key = get_unique_key()
 sign_in = st.button("Sign In", key=sign_in_button_key)
 
+# Track sign-in status
+signed_in = False
+
 # Authenticate user
 if sign_in and password and verify_password(password):
-    state.signed_in = True
+    signed_in = True
 
-if state.signed_in:
+if signed_in:
     st.success("Authentication successful!")
     st.info("Please enter your search parameters.")
 
