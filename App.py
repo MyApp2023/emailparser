@@ -81,9 +81,10 @@ if not verify_password(password):
 else:
     # Prompt for search input
     api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'))
-    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
-    search_query = st.text_input("Enter the search string:")
+num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
+search_query = st.text_input("Enter the search string:")
 
+if st.button("Search"):
     if api_choice == '1' and google_maps_api_key:
         place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
         print_urls(place_urls)
@@ -111,5 +112,3 @@ else:
                 st.write("No email addresses found.")
         else:
             st.write("Extraction skipped.")
-
-st.write("|-------------------------------------|")
