@@ -22,19 +22,19 @@ def verify_password(password):
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password == hashed_input
 
+
 def lock_user():
     lock_time = int(time.time()) + LOCK_DURATION
     with open("lock.txt", "w") as lock_file:
         lock_file.write(str(lock_time))
 
 def is_user_locked():
-    try:
+    lock_file_exists = os.path.exists("lock.txt")
+    if lock_file_exists:
         with open("lock.txt", "r") as lock_file:
             lock_time = int(lock_file.read())
             if lock_time > int(time.time()):
                 return True
-    except FileNotFoundError:
-        pass
     return False
 
 def get_place_urls(query, num_results, api_key):
