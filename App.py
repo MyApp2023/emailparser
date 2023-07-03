@@ -88,7 +88,7 @@ google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 st.write("|-------------------------------------|")
-st.write("|--------E-mails retrieval Bot--------|")
+st.write("|      Welcome to Email Parser        |")
 st.write("|-------------------------------------|")
 
 def login():
@@ -104,7 +104,7 @@ def login():
             break
 
         # Prompt for password input
-        password = st.text_input("Enter password:", key="password_input")
+        password = st.text_input("Enter password:", key=f"password_input_{attempts}")
         password = password[:30]  # Limit password length to 30 characters
 
         if not verify_password(password):
