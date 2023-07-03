@@ -126,4 +126,3 @@ if state == STATE_SEARCH:
                 st.write("No email addresses found.")
         else:
             st.write("Extraction skipped.")
-
