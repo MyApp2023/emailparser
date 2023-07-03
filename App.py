@@ -25,10 +25,13 @@ def read_config_file():
             config[key] = value
     return config
 
-def verify_password(password):
-    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
-    hashed_input = hashlib.sha256(password.encode()).hexdigest()
-    return hashed_password == hashed_input
+@st.cache_data
+def verify_credentials(username, password):
+    hashed_username = '0192023a7bbd73250516f069df18b500'  # admin (md5 hash)
+    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin (sha256 hash)
+    hashed_input_username = hashlib.md5(username.encode()).hexdigest()
+    hashed_input_password = hashlib.sha256(password.encode()).hexdigest()
+    return hashed_username == hashed_input_username and hashed_password == hashed_input_password
 
 def lock_user():
     lock_time = int(time.time()) + LOCK_DURATION
@@ -45,6 +48,7 @@ def is_user_locked():
         pass
     return False
 
+@st.cache_data
 def get_place_urls(query, num_results, api_key):
     gmaps = googlemaps.Client(key=api_key)
     response = gmaps.places(query=query)
@@ -57,6 +61,7 @@ def get_place_urls(query, num_results, api_key):
             break
     return results
 
+@st.cache_data
 def get_search_results(query, num_results, api_key, search_engine_id):
     url = f'https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}'
     response = requests.get(url)
@@ -104,7 +109,7 @@ password = st.text_input("Enter password:", key=password_key)
 password = password[:30]  # Limit password length to 30 characters
 
 # Authenticate user
-if password and verify_password(password):
+if password and verify_credentials("admin", password):
     st.success("Authentication successful!")
     st.info("Please enter your search parameters.")
     
