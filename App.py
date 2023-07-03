@@ -65,13 +65,6 @@ def get_search_results(query, num_results, api_key, search_engine_id):
     results = [item['link'] for item in items[:num_results]]
     return results
 
-def print_urls(urls):
-    if len(urls) > 0:
-        for index, url in enumerate(urls, start=1):
-            st.write(f"{index}. {url}\n")
-    else:
-        st.write("No results found.")
-
 def find_email_addresses(urls):
     email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
     email_addresses = {}
@@ -94,7 +87,6 @@ google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
 google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
-# Main program
 # Main program
 st.title("Email Parser")
 
@@ -142,20 +134,20 @@ if st.session_state.signed_in:
             st.info("Fetching URLs from Google Places API...")
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
             email_addresses = find_email_addresses(urls)
+            st.write("\n\n\n-------- Email Addresses --------\n")
             for url, email_list in email_addresses.items():
-                if email_list != ['Email not found']:
-                    st.write(f"\n{url}\n")
-                    for email in email_list:
-                        st.write(f"- {email}")
+                st.write(f"\n{url}\n")
+                for email in email_list:
+                    st.write(f"- {email}")
         elif api_choice == '2' and google_search_api_key and search_engine_id:
             st.info("Fetching URLs from Google Custom Search API...")
             urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
             email_addresses = find_email_addresses(urls)
+            st.write("\n\n\n-------- Email Addresses --------\n")
             for url, email_list in email_addresses.items():
-                if email_list != ['Email not found']:
-                    st.write(f"\n{url}\n")
-                    for email in email_list:
-                        st.write(f"- {email}")
+                st.write(f"\n{url}\n")
+                for email in email_list:
+                    st.write(f"- {email}")
         else:
             st.error("Missing API key or search engine ID. Please check the configuration.")
 else:
