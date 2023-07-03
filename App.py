@@ -89,8 +89,9 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 st.write("|-------------------------------------|")
 st.write("|--------E-mails retrieval Bot--------|")
-st.write("|-------------------------------------|\n")
+st.write("|-------------------------------------|")
 
+st.write("Please enter your password to proceed.")
 attempts = 0
 while attempts < MAX_ATTEMPTS:
     if is_user_locked():
