@@ -100,7 +100,7 @@ while attempts < MAX_ATTEMPTS:
         break
 
     # Prompt for password input
-    password = st.text_input("Enter password:", key="password_input")
+    password = st.text_input("Enter password:", key="password_input" + str(attempts))
     password = password[:30]  # Limit password length to 30 characters
 
     if not verify_password(password):
