@@ -26,7 +26,7 @@ def read_config_file():
     return config
 
 def verify_password(password):
-    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
+    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password == hashed_input
 
@@ -65,29 +65,15 @@ def get_search_results(query, num_results, api_key, search_engine_id):
     results = [item['link'] for item in items[:num_results]]
     return results
 
-def print_urls(urls):
-    if len(urls) > 0:
-        st.write("\n\n\n-------- URLs --------\n")
-        for index, url in enumerate(urls, start=1):
-            st.write(f"{index}. {url}\n")
+def print_emails(email_addresses):
+    if len(email_addresses) > 0:
+        st.write("\n\n\n-------- Email Addresses --------\n")
+        for url, email_list in email_addresses.items():
+            st.write(f"\n{url}\n")
+            for email in email_list:
+                st.write(f"- {email}")
     else:
-        st.write("No results found.")
-
-def find_email_addresses(urls):
-    email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
-    email_addresses = {}
-    for url in urls:
-        try:
-            response = requests.get(url)
-            if response.status_code == 200:
-                email_matches = re.findall(email_regex, response.text)
-                if email_matches:
-                    email_addresses[url] = list(set(email_matches))  # Remove duplicates
-                else:
-                    email_addresses[url] = ['Email not found']  # Add placeholder for email not found
-        except requests.exceptions.RequestException as e:
-            st.write(f"Error retrieving content from {url}: {e}")
-    return email_addresses
+        st.write("No email addresses found.")
 
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
@@ -100,8 +86,15 @@ st.title("Email Parser")
 
 # Prompt for password input
 password_key = get_unique_key()
-password = st.text_input("Enter password:", key=password_key)
+password = st.text_input("Enter password:", type="password", key=password_key)
 password = password[:30]  # Limit password length to 30 characters
+
+# Password visibility toggle
+show_password = st.checkbox("Show password")
+
+# Replace password with asterisks
+if password and not show_password:
+    password = "*" * len(password)
 
 # Sign in button
 sign_in_button_key = get_unique_key()
@@ -141,23 +134,13 @@ if st.session_state.signed_in:
         if api_choice == '1' and google_maps_api_key:
             st.info("Fetching URLs from Google Places API...")
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
-            print_urls(urls)
             email_addresses = find_email_addresses(urls)
-            st.write("\n\n\n-------- Email Addresses --------\n")
-            for url, email_list in email_addresses.items():
-                st.write(f"\n{url}\n")
-                for email in email_list:
-                    st.write(f"- {email}")
+            print_emails(email_addresses)
         elif api_choice == '2' and google_search_api_key and search_engine_id:
             st.info("Fetching URLs from Google Custom Search API...")
             urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
-            print_urls(urls)
             email_addresses = find_email_addresses(urls)
-            st.write("\n\n\n-------- Email Addresses --------\n")
-            for url, email_list in email_addresses.items():
-                st.write(f"\n{url}\n")
-                for email in email_list:
-                    st.write(f"- {email}")
+            print_emails(email_addresses)
         else:
             st.error("Missing API key or search engine ID. Please check the configuration.")
 else:
