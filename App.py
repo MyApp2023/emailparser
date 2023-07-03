@@ -8,6 +8,14 @@ import time
 MAX_ATTEMPTS = 10
 LOCK_DURATION = 10
 
+# Counter for generating unique widget keys
+widget_counter = 0
+
+def get_unique_key():
+    global widget_counter
+    widget_counter += 1
+    return f"widget_{widget_counter}"
+
 def read_config_file():
     config = {}
     with open("config.txt", "r") as file:
@@ -84,81 +92,62 @@ def find_email_addresses(urls):
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
 google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
-google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
+custom_search_api_key = config.get("CUSTOM_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
-st.write("|-------------------------------------|")
-st.write("|--------E-mails retrieval Bot--------|")
-st.write("|-------------------------------------|\n")
+# Main program
+st.title("Email Parser")
 
-attempts = 0
-while attempts < MAX_ATTEMPTS:
-    if is_user_locked():
-        lock_time = int(time.time())
-        remaining_time = int((lock_time - int(time.time()) + LOCK_DURATION) / 60)  # Convert remaining time to minutes
-        st.write(f"You have exceeded the maximum number of unsuccessful attempts. Please try again after {remaining_time} minutes.")
-        break
+# Prompt for password input
+password_key = get_unique_key()
+password = st.text_input("Enter password:", key=password_key)
+password = password[:30]  # Limit password length to 30 characters
 
-    # Prompt for password input
-    try:
-        password = st.text_input("Enter password:", key="password_input")
-    except st.DuplicateWidgetID:
-        pass
-
-    password = password[:30]  # Limit password length to 30 characters
-
-    if not verify_password(password):
-        attempts += 1
-        st.write("Invalid password.")
-        if attempts >= MAX_ATTEMPTS:
-            lock_user()
-            st.write("You have exceeded the maximum number of unsuccessful attempts. Your account is locked for 5 minutes.")
-    else:
-        attempts = 0  # Reset attempts on successful password entry
-
-        # Prompt for search input
-        api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key="api_choice_input")
-        num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key="num_results_input")
-
-        try:
-            search_query = st.text_input("Enter the search string:", key="search_query_input")
-        except st.DuplicateWidgetID:
-            pass
-
+# Authenticate user
+if password and verify_password(password):
+    st.success("Authentication successful!")
+    st.info("Please enter your search parameters.")
+    
+    # Prompt for search input
+    search_query_key = get_unique_key()
+    search_query = st.text_input("Enter the search string:", key=search_query_key)
+    
+    api_choice_key = get_unique_key()
+    api_choice = st.selectbox("Enter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key=api_choice_key)
+    
+    num_results_key = get_unique_key()
+    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
+    
+    if search_query and api_choice and num_results:
         if api_choice == '1' and google_maps_api_key:
-            place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
-            print_urls(place_urls)
-            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_input")
-            if proceed.lower() == "yes":
-                emails = find_email_addresses(place_urls)
-                if emails:
-                    st.write("\n\n\n-------- URLs: Email addresses --------\n")
-                    for index, (url, email_list) in enumerate(emails.items(), start=1):
-                        st.write(f"{index}. {url}: {', '.join(email_list)}\n")
-                else:
-                    st.write("No email addresses found.")
-            else:
-                st.write("Extraction skipped.")
-
-        elif api_choice == '2' and google_search_api_key and search_engine_id:
-            urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
+            st.info("Fetching URLs from Google Places API...")
+            urls = get_place_urls(search_query, num_results, google_maps_api_key)
             print_urls(urls)
-            proceed = st.selectbox("Do you want to extract email addresses from these URLs?", ('Yes', 'No'), key="proceed_input")
-            if proceed.lower() == "yes":
-                emails = find_email_addresses(urls)
-                if emails:
-                    st.write("--- URLs: Email addresses ---\n")
-                    for index, (url, email_list) in enumerate(emails.items(), start=1):
-                        st.write(f"{index}. {url}: {', '.join(email_list)}\n")
-                else:
-                    st.write("No email addresses found.")
-            else:
-                st.write("Extraction skipped.")
-
+            email_addresses = find_email_addresses(urls)
+            st.write("\n\n\n-------- Email Addresses --------\n")
+            for url, email_list in email_addresses.items():
+                st.write(f"\n{url}\n")
+                for email in email_list:
+                    st.write(f"- {email}")
+        elif api_choice == '2' and custom_search_api_key and search_engine_id:
+            st.info("Fetching URLs from Google Custom Search API...")
+            urls = get_search_results(search_query, num_results, custom_search_api_key, search_engine_id)
+            print_urls(urls)
+            email_addresses = find_email_addresses(urls)
+            st.write("\n\n\n-------- Email Addresses --------\n")
+            for url, email_list in email_addresses.items():
+                st.write(f"\n{url}\n")
+                for email in email_list:
+                    st.write(f"- {email}")
         else:
-            st.write("Invalid choice or missing API keys. Please check the configuration.")
+            st.error("Missing API key or search engine ID. Please check the configuration.")
+else:
+    if is_user_locked():
+        st.error("Too many failed login attempts. Please try again later.")
+    elif password:
+        st.warning("Authentication failed. Please try again.")
+        lock_user()
 
-        restart = st.button("Search Again")
-        if not restart:
-            st.write("Thank you for using our bot!")
-            break
+# Reset widget keys to avoid duplicate key issue when rerunning the app
+widget_counter = 0
+
