@@ -25,8 +25,7 @@ def read_config_file():
             config[key] = value
     return config
 
-@st.cache(allow_output_mutation=True)
-def authenticate(username, password):
+def verify_credentials(username, password):
     hashed_username = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
     hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
     hashed_input_username = hashlib.sha256(username.encode()).hexdigest()
@@ -101,6 +100,12 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 # Main program
 st.title("Email Parser")
 
+@st.cache_data()
+def authenticate(username, password):
+    if username and password and verify_credentials(username, password):
+        return True
+    return False
+
 # Prompt for username and password input
 username_key = get_unique_key()
 password_key = get_unique_key()
@@ -110,7 +115,8 @@ password = st.text_input("Enter password:", key=password_key, type="password")
 # Check if "Sign In" button is clicked
 if st.button("Sign In"):
     # Authenticate user
-    if username and password and authenticate(username, password):
+    is_authenticated = authenticate(username, password)
+    if is_authenticated:
         st.success("Authentication successful!")
         st.info("Please enter your search parameters.")
 
@@ -147,6 +153,8 @@ if st.button("Sign In"):
                         st.write(f"- {email}")
             else:
                 st.error("Missing API key or search engine ID. Please check the configuration.")
+        else:
+            st.warning("Please fill in all the search parameters.")
     else:
         if is_user_locked():
             st.error("Too many failed login attempts. Please try again later.")
