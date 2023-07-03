@@ -11,30 +11,25 @@ LOCK_DURATION = 10
 # Counter for generating unique widget keys
 widget_counter = 0
 
+@st.cache_data()
 def get_unique_key():
     global widget_counter
     widget_counter += 1
     return f"widget_{widget_counter}"
 
-def read_config_file():
-    config = {}
-    with open("config.txt", "r") as file:
-        lines = file.readlines()
-        for line in lines:
-            key, value = line.strip().split("=")
-            config[key] = value
-    return config
-
+@st.cache_data()
 def verify_password(password):
-    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
+    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password == hashed_input
 
+@st.cache_data()
 def lock_user():
     lock_time = int(time.time()) + LOCK_DURATION
     with open("lock.txt", "w") as lock_file:
         lock_file.write(str(lock_time))
 
+@st.cache_data()
 def is_user_locked():
     try:
         with open("lock.txt", "r") as lock_file:
@@ -45,6 +40,7 @@ def is_user_locked():
         pass
     return False
 
+@st.cache_data()
 def get_place_urls(query, num_results, api_key):
     gmaps = googlemaps.Client(key=api_key)
     response = gmaps.places(query=query)
@@ -57,6 +53,7 @@ def get_place_urls(query, num_results, api_key):
             break
     return results
 
+@st.cache_data()
 def get_search_results(query, num_results, api_key, search_engine_id):
     url = f'https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}'
     response = requests.get(url)
@@ -65,14 +62,7 @@ def get_search_results(query, num_results, api_key, search_engine_id):
     results = [item['link'] for item in items[:num_results]]
     return results
 
-def print_urls(urls):
-    if len(urls) > 0:
-        st.write("\n\n\n-------- URLs --------\n")
-        for index, url in enumerate(urls, start=1):
-            st.write(f"{index}. {url}\n")
-    else:
-        st.write("No results found.")
-
+@st.cache_data()
 def find_email_addresses(urls):
     email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
     email_addresses = {}
@@ -88,6 +78,16 @@ def find_email_addresses(urls):
         except requests.exceptions.RequestException as e:
             st.write(f"Error retrieving content from {url}: {e}")
     return email_addresses
+
+@st.cache_resource('config.txt')
+def read_config_file():
+    config = {}
+    with open("config.txt", "r") as file:
+        lines = file.readlines()
+        for line in lines:
+            key, value = line.strip().split("=")
+            config[key] = value
+    return config
 
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
