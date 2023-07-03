@@ -92,20 +92,20 @@ def find_email_addresses(urls):
 
 config = read_config_file()
 google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
-custom_search_api_key = config.get("CUSTOM_SEARCH_API_KEY", "")
+google_search_api_key = config.get("CUSTOM_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 # Debugging: Print the values of API keys and search engine ID
 st.write("API keys and search engine ID:")
 st.write(f"Google Maps API Key: {google_maps_api_key}")
-st.write(f"Custom Search API Key: {custom_search_api_key}")
+st.write(f"Custom Search API Key: {google_search_api_key}")
 st.write(f"Search Engine ID: {search_engine_id}")
 
 
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
 google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
-custom_search_api_key = config.get("CUSTOM_SEARCH_API_KEY", "")
+google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 # Main program
