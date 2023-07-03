@@ -5,8 +5,8 @@ import re
 import hashlib
 import time
 
-MAX_ATTEMPTS = 5
-LOCK_DURATION = 300
+MAX_ATTEMPTS = 10
+LOCK_DURATION = 10
 
 def read_config_file():
     config = {}
