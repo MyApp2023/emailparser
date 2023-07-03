@@ -57,6 +57,14 @@ def get_search_results(query, num_results, api_key, search_engine_id):
     results = [item['link'] for item in items[:num_results]]
     return results
 
+def print_urls(urls):
+    if len(urls) > 0:
+        st.write("\n\n\n-------- URLs --------\n")
+        for index, url in enumerate(urls, start=1):
+            st.write(f"{index}. {url}\n")
+    else:
+        st.write("No results found.")
+
 def find_email_addresses(urls):
     email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
     email_addresses = {}
@@ -105,14 +113,15 @@ while attempts < MAX_ATTEMPTS:
         attempts = 0  # Reset attempts on successful password entry
 
         # Prompt for search input
-        api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key="api_choice_input")
-        num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key="num_results_input")
+        api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'))
+        num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
         search_query = st.text_input("Enter the search string:")
-        search_button = st.button("Search and Extract Emails")
 
-        if search_button:
-            if api_choice == '1' and google_maps_api_key:
-                place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
+        if api_choice == '1' and google_maps_api_key:
+            place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
+            print_urls(place_urls)
+            proceed = st.button("Search and Extract e-mails")
+            if proceed:
                 emails = find_email_addresses(place_urls)
                 if emails:
                     st.write("\n\n\n-------- URLs: Email addresses --------\n")
@@ -120,9 +129,14 @@ while attempts < MAX_ATTEMPTS:
                         st.write(f"{index}. {url}: {', '.join(email_list)}\n")
                 else:
                     st.write("No email addresses found.")
+            else:
+                st.write("Extraction skipped.")
 
-            elif api_choice == '2' and google_search_api_key and search_engine_id:
-                urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
+        elif api_choice == '2' and google_search_api_key and search_engine_id:
+            urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
+            print_urls(urls)
+            proceed = st.button("Search and Extract e-mails")
+            if proceed:
                 emails = find_email_addresses(urls)
                 if emails:
                     st.write("--- URLs: Email addresses ---\n")
@@ -130,8 +144,11 @@ while attempts < MAX_ATTEMPTS:
                         st.write(f"{index}. {url}: {', '.join(email_list)}\n")
                 else:
                     st.write("No email addresses found.")
-
             else:
-                st.write("Invalid choice or missing API keys. Please check the configuration.")
+                st.write("Extraction skipped.")
 
-    
+        else:
+            st.write("Invalid choice or missing API keys. Please check the configuration.")
+
+        st.write("Thank you for using our bot!")
+        break
