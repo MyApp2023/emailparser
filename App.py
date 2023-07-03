@@ -107,14 +107,15 @@ password = password[:30]  # Limit password length to 30 characters
 sign_in_button_key = get_unique_key()
 sign_in = st.button("Sign In", key=sign_in_button_key)
 
-# Track sign-in status
-signed_in = False
+# Track sign-in status using session state
+if 'signed_in' not in st.session_state:
+    st.session_state.signed_in = False
 
 # Authenticate user
 if sign_in and password and verify_password(password):
-    signed_in = True
+    st.session_state.signed_in = True
 
-if signed_in:
+if st.session_state.signed_in:
     st.success("Authentication successful!")
     st.info("Please enter your search parameters.")
 
