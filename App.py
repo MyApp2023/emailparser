@@ -119,7 +119,7 @@ if password and verify_password(password):
     num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
     
     if search_query and api_choice and num_results:
-        if api_choice == '1' and google_maps_api_key:
+        if api_choice == '1' and google_maps_api_key != "":
             st.info("Fetching URLs from Google Places API...")
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
             print_urls(urls)
@@ -129,7 +129,7 @@ if password and verify_password(password):
                 st.write(f"\n{url}\n")
                 for email in email_list:
                     st.write(f"- {email}")
-        elif api_choice == '2' and custom_search_api_key and search_engine_id:
+        elif api_choice == '2' and custom_search_api_key != "" and search_engine_id != "":
             st.info("Fetching URLs from Google Custom Search API...")
             urls = get_search_results(search_query, num_results, custom_search_api_key, search_engine_id)
             print_urls(urls)
