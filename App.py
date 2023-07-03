@@ -106,52 +106,50 @@ password_key = get_unique_key()
 username = st.text_input("Enter username:", key=username_key)
 password = st.text_input("Enter password:", key=password_key, type="password")
 
-# Check if "Sign In" button is clicked
-if st.button("Sign In"):
-    # Authenticate user
-    if username and password and verify_credentials(username, password):
-        st.success("Authentication successful!")
-        st.info("Please enter your search parameters.")
-
-        # Prompt for search input
-        search_query_key = get_unique_key()
-        search_query = st.text_input("Enter the search string:", key=search_query_key)
-
-        api_choice_key = get_unique_key()
-        api_choice = st.selectbox("Enter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key=api_choice_key)
-
-        num_results_key = get_unique_key()
-        num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
-
-        if search_query and api_choice and num_results:
-            if api_choice == '1' and google_maps_api_key:
-                st.info("Fetching URLs from Google Places API...")
-                urls = get_place_urls(search_query, num_results, google_maps_api_key)
-                print_urls(urls)
-                email_addresses = find_email_addresses(urls)
-                st.write("\n\n\n-------- Email Addresses --------\n")
-                for url, email_list in email_addresses.items():
-                    st.write(f"\n{url}\n")
-                    for email in email_list:
-                        st.write(f"- {email}")
-            elif api_choice == '2' and custom_search_api_key and search_engine_id:
-                st.info("Fetching URLs from Google Custom Search API...")
-                urls = get_search_results(search_query, num_results, custom_search_api_key, search_engine_id)
-                print_urls(urls)
-                email_addresses = find_email_addresses(urls)
-                st.write("\n\n\n-------- Email Addresses --------\n")
-                for url, email_list in email_addresses.items():
-                    st.write(f"\n{url}\n")
-                    for email in email_list:
-                        st.write(f"- {email}")
-            else:
-                st.error("Missing API key or search engine ID. Please check the configuration.")
-    else:
-        if is_user_locked():
-            st.error("Too many failed login attempts. Please try again later.")
-        elif username and password:
-            st.warning("Authentication failed. Please try again.")
-            lock_user()
+# Authenticate user
+if username and password and verify_credentials(username, password):
+    st.success("Authentication successful!")
+    st.info("Please enter your search parameters.")
+    
+    # Prompt for search input
+    search_query_key = get_unique_key()
+    search_query = st.text_input("Enter the search string:", key=search_query_key)
+    
+    api_choice_key = get_unique_key()
+    api_choice = st.selectbox("Enter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key=api_choice_key)
+    
+    num_results_key = get_unique_key()
+    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
+    
+    if search_query and api_choice and num_results:
+        if api_choice == '1' and google_maps_api_key:
+            st.info("Fetching URLs from Google Places API...")
+            urls = get_place_urls(search_query, num_results, google_maps_api_key)
+            print_urls(urls)
+            email_addresses = find_email_addresses(urls)
+            st.write("\n\n\n-------- Email Addresses --------\n")
+            for url, email_list in email_addresses.items():
+                st.write(f"\n{url}\n")
+                for email in email_list:
+                    st.write(f"- {email}")
+        elif api_choice == '2' and custom_search_api_key and search_engine_id:
+            st.info("Fetching URLs from Google Custom Search API...")
+            urls = get_search_results(search_query, num_results, custom_search_api_key, search_engine_id)
+            print_urls(urls)
+            email_addresses = find_email_addresses(urls)
+            st.write("\n\n\n-------- Email Addresses --------\n")
+            for url, email_list in email_addresses.items():
+                st.write(f"\n{url}\n")
+                for email in email_list:
+                    st.write(f"- {email}")
+        else:
+            st.error("Missing API key or search engine ID. Please check the configuration.")
 else:
-    # Reset widget keys to avoid duplicate key issue when rerunning the app
-    widget_counter = 0
+    if is_user_locked():
+        st.error("Too many failed login attempts. Please try again later.")
+    elif username and password:
+        st.warning("Authentication failed. Please try again.")
+        lock_user()
+
+# Reset widget keys to avoid duplicate key issue when rerunning the app
+widget_counter = 0
