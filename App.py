@@ -27,9 +27,9 @@ def read_config_file():
 
 @st.cache_data
 def verify_credentials(username, password):
-    hashed_username = '0192023a7bbd73250516f069df18b500'  # admin (md5 hash)
+    hashed_username = 'd033e22ae348aeb5660fc2140aec35850c4da997'  # admin (sha1 hash)
     hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin (sha256 hash)
-    hashed_input_username = hashlib.md5(username.encode()).hexdigest()
+    hashed_input_username = hashlib.sha1(username.encode()).hexdigest()
     hashed_input_password = hashlib.sha256(password.encode()).hexdigest()
     return hashed_username == hashed_input_username and hashed_password == hashed_input_password
 
@@ -103,26 +103,30 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 # Main program
 st.title("Email Parser")
 
-# Prompt for password input
+# Prompt for username and password input
+username_key = get_unique_key()
+username = st.text_input("Enter username:", key=username_key)
+
 password_key = get_unique_key()
-password = st.text_input("Enter password:", key=password_key)
-password = password[:30]  # Limit password length to 30 characters
+password = st.text_input("Enter password:", key=password_key, type="password")
 
 # Authenticate user
-if password and verify_credentials("admin", password):
+if username and password and verify_credentials(username, password):
     st.success("Authentication successful!")
     st.info("Please enter your search parameters.")
-    
+
     # Prompt for search input
     search_query_key = get_unique_key()
     search_query = st.text_input("Enter the search string:", key=search_query_key)
-    
+
     api_choice_key = get_unique_key()
-    api_choice = st.selectbox("Enter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key=api_choice_key)
-    
+    api_choice = st.selectbox(
+        "Enter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'), key=api_choice_key)
+
     num_results_key = get_unique_key()
-    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1, key=num_results_key)
-    
+    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1,
+                                  key=num_results_key)
+
     if search_query and api_choice and num_results:
         if api_choice == '1' and google_maps_api_key:
             st.info("Fetching URLs from Google Places API...")
@@ -149,7 +153,7 @@ if password and verify_credentials("admin", password):
 else:
     if is_user_locked():
         st.error("Too many failed login attempts. Please try again later.")
-    elif password:
+    elif username or password:
         st.warning("Authentication failed. Please try again.")
         lock_user()
 
