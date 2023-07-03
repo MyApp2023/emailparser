@@ -135,6 +135,9 @@ while attempts < MAX_ATTEMPTS:
                 st.write("Invalid choice or missing API keys. Please check the configuration.")
 
             restart = st.selectbox("Do you want to perform another search?", ('Yes', 'No'), key="restart_input")
-            if restart.lower() != "yes":
+            if restart.lower() == "yes":
+                continue
+            elif restart.lower() == "no":
+                st.write("Thank you for using our bot!")
                 break
 
