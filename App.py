@@ -3,9 +3,6 @@ import googlemaps
 import requests
 import re
 import hashlib
-import os
-
-MAX_ATTEMPTS = 5
 
 def read_config_file():
     config = {}
@@ -72,39 +69,53 @@ google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 st.write("|-------------------------------------|")
-st.write("|      Welcome to Email Parser        |")
-st.write("|-------------------------------------|")
+st.write("|--------E-mails retrieval Bot--------|")
+st.write("|-------------------------------------|\n")
 
-def login():
-    authenticated = False
+# Prompt for password input
+password = st.text_input("Enter password:", key="password_input")
+password = password[:30]  # Limit password length to 30 characters
 
-    while not authenticated:
-        # Prompt for password input
-        password = st.text_input("Enter password:", type="password", key="password_input")
-        password = password[:30]  # Limit password length to 30 characters
+if not verify_password(password):
+    st.write("Invalid password.")
+else:
+    # Prompt for search input
+    api_choice = st.selectbox("\n\nEnter '1' to use Google Places API or '2' to use Google Custom Search API:", ('1', '2'))
+    num_results = st.number_input("How many URLs do you want to get?", min_value=1, step=1, value=1)
+    search_query = st.text_input("Enter the search string:")
 
-        if not verify_password(password):
-            st.write("Invalid password.")
+    if api_choice == '1' and google_maps_api_key:
+        place_urls = get_place_urls(search_query, num_results, google_maps_api_key)
+        print_urls(place_urls)
+        st.button("Extract e-mails", key="extract_emails")
+        if st.button("Extract e-mails", key="extract_emails"):
+            emails = find_email_addresses(place_urls)
+            if emails:
+                st.write("\n\n\n-------- URLs: Email addresses --------\n")
+                for index, (url, email_list) in enumerate(emails.items(), start=1):
+                    st.write(f"{index}. {url}: {', '.join(email_list)}\n")
+            else:
+                st.write("No email addresses found.")
         else:
-            authenticated = True
+            st.write("Extraction skipped.")
 
-    query = st.text_input("Enter your query:")
-    num_results = st.number_input("Enter the number of results to retrieve:", min_value=1, step=1, value=5)
+    elif api_choice == '2' and google_search_api_key and search_engine_id:
+        urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
+        print_urls(urls)
+        st.button("Extract e-mails", key="extract_emails")
+        if st.button("Extract e-mails", key="extract_emails"):
+            emails = find_email_addresses(urls)
+            if emails:
+                st.write("--- URLs: Email addresses ---\n")
+                for index, (url, email_list) in enumerate(emails.items(), start=1):
+                    st.write(f"{index}. {url}: {', '.join(email_list)}\n")
+            else:
+                st.write("No email addresses found.")
+        else:
+            st.write("Extraction skipped.")
 
-    st.write("\nRetrieving place URLs from Google Maps...")
-    place_urls = get_place_urls(query, num_results, google_maps_api_key)
-    st.write("\nRetrieving search URLs from Google Custom Search...")
-    search_urls = get_search_results(query, num_results, google_search_api_key, search_engine_id)
+st.button("Search", key="search_button")
+if st.button("Search", key="search_button"):
+    st.write("Performing another search...")
 
-    all_urls = place_urls + search_urls
-    print_urls(all_urls)
-
-    st.write("\n\n\n-------- Email Addresses --------\n")
-    email_addresses = find_email_addresses(all_urls)
-    for url, email_list in email_addresses.items():
-        st.write(f"\nURL: {url}")
-        st.write("Emails:")
-        for email in email_list:
-            st.write(email)
-
-login()
+st.write("|-------------------------------------|")
