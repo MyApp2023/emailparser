@@ -93,26 +93,31 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 # Main program
 st.title("Email Parser")
 
-# Prompt for password input
-password_key = get_unique_key()
-password = st.text_input("Please enter password:", key=password_key)
-password = password[:30]  # Limit password length to 30 characters
-
-# Sign in button
-sign_in_button_key = get_unique_key()
-sign_in = st.button("Sign In", key=sign_in_button_key)
-
 # Track sign-in status using session state
 if 'signed_in' not in st.session_state:
     st.session_state.signed_in = False
 
 # Authenticate user
-if sign_in and password and verify_password(password):
-    st.session_state.signed_in = True
+if not st.session_state.signed_in:
+    # Prompt for password input
+    password_key = get_unique_key()
+    password = st.text_input("Enter password:", key=password_key)
+    password = password[:30]  # Limit password length to 30 characters
+
+    # Sign in button
+    sign_in_button_key = get_unique_key()
+    sign_in = st.button("Sign In", key=sign_in_button_key)
+
+    # Authenticate user
+    if sign_in and password and verify_password(password):
+        st.session_state.signed_in = True
+    elif sign_in and password:
+        st.warning("Authentication failed. Please try again.")
+        lock_user()
 
 if st.session_state.signed_in:
     st.success("Authentication successful!")
-
+    st.info("Please enter your search parameters.")
 
     # Prompt for search input
     search_query_key = get_unique_key()
@@ -154,9 +159,6 @@ if st.session_state.signed_in:
 else:
     if is_user_locked():
         st.error("Too many failed login attempts. Please try again later.")
-    elif sign_in and password:
-        st.warning("Authentication failed. Please try again.")
-        lock_user()
 
 # Reset widget keys to avoid duplicate key issue when rerunning the app
 widget_counter = 0
