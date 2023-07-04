@@ -27,7 +27,7 @@ def read_config_file():
     return config
 
 def verify_password(password):
-    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # admin
+    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
     return hashed_password == hashed_input
 
@@ -111,12 +111,12 @@ if not st.session_state.signed_in:
     # Check password and sign in
     if sign_in and password and verify_password(password):
         st.session_state.signed_in = True
+        st.success("Authentication successful!")
     elif sign_in and password:
         st.warning("Authentication failed. Please try again.")
         lock_user()
 
 if st.session_state.signed_in:
-    st.success("Authentication successful!")
     st.info("Please enter your search parameters.")
 
     # Prompt for search input
