@@ -77,7 +77,7 @@ def find_email_addresses(urls):
                 if email_matches:
                     filtered_emails = set()  # Use a set to remove duplicates
                     for email in email_matches:
-                        if not email.endswith(("wixpress.com", "sentry.io", ".png", ".html")):
+                        if not email.endswith(("wixpress.com", "sentry.io", ".png", "jpg", ".html")):
                             filtered_emails.add(email)
                     if filtered_emails:
                         email_addresses[url] = list(filtered_emails)  # Convert set back to a list
