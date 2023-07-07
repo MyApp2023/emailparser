@@ -75,12 +75,12 @@ def find_email_addresses(urls):
             if response.status_code == 200:
                 email_matches = re.findall(email_regex, response.text)
                 if email_matches:
-                    filtered_emails = []
+                    filtered_emails = set()  # Use a set to remove duplicates
                     for email in email_matches:
                         if not email.endswith(("wixpress.com", "sentry.io", ".png", ".html")):
-                            filtered_emails.append(email)
+                            filtered_emails.add(email)
                     if filtered_emails:
-                        email_addresses[url] = filtered_emails
+                        email_addresses[url] = list(filtered_emails)  # Convert set back to a list
                     else:
                         email_addresses[url] = ['Email not found']
                 else:
