@@ -66,7 +66,7 @@ def get_search_results(query, num_results, api_key, search_engine_id):
     results = [item['link'] for item in items[:num_results]]
     return results[:num_results]
 
-def find_email_addresses(urls):
+def find_email_addresses(urls, max_emails):
     email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
     email_addresses = {}
     for i, url in enumerate(urls, start=1):
@@ -80,7 +80,7 @@ def find_email_addresses(urls):
                         if not email.endswith(("wixpress.com", "sentry.io", ".png", "jpg", ".html")):
                             filtered_emails.add(email)
                     if filtered_emails:
-                        email_addresses[url] = list(filtered_emails)  # Convert set back to a list
+                        email_addresses[url] = list(filtered_emails)[:max_emails]  # Limit the number of emails
                     else:
                         email_addresses[url] = ['Email not found']
                 else:
@@ -120,7 +120,6 @@ if sign_in and password and verify_password(password):
 if st.session_state.signed_in:
     st.success("Authentication successful!")
 
-
     # Prompt for search input
     search_query_key = get_unique_key()
     search_query = st.text_input("Enter the search string:", key=search_query_key)
@@ -135,6 +134,9 @@ if st.session_state.signed_in:
     num_results_key = get_unique_key()
     num_results = st.number_input("How many URLs do you want to get?", min_value=1, max_value=MAX_URLS, step=1, value=1, key=num_results_key)
 
+    max_emails_key = get_unique_key()
+    max_emails = st.number_input("Maximum number of emails to extract from each URL:", min_value=1, max_value=100, step=1, value=10, key=max_emails_key)
+
     # Search and extract e-mails button
     search_emails_button_key = get_unique_key()
     search_emails = st.button("Search and extract e-mails", key=search_emails_button_key)
@@ -143,7 +145,7 @@ if st.session_state.signed_in:
         if api_choice == 'Google Businesses' and google_maps_api_key:
             st.info("Fetching URLs and e-mails using Google Places API...")
             urls = get_place_urls(search_query, num_results, google_maps_api_key)
-            email_addresses = find_email_addresses(urls)
+            email_addresses = find_email_addresses(urls, max_emails)
             for i, (url, email_list) in enumerate(email_addresses.items(), start=1):
                 st.write(f"\n{i}. {url}\n")
                 for email in email_list:
@@ -151,7 +153,7 @@ if st.session_state.signed_in:
         elif api_choice == 'Google Search' and google_search_api_key and search_engine_id:
             st.info("Fetching URLs and e-mails using Google Custom Search API...")
             urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
-            email_addresses = find_email_addresses(urls)
+            email_addresses = find_email_addresses(urls, max_emails)
             for i, (url, email_list) in enumerate(email_addresses.items(), start=1):
                 st.write(f"\n{i}. {url}\n")
                 for email in email_list:
