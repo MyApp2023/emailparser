@@ -75,9 +75,16 @@ def find_email_addresses(urls):
             if response.status_code == 200:
                 email_matches = re.findall(email_regex, response.text)
                 if email_matches:
-                    email_addresses[url] = list(set(email_matches))  # Remove duplicates
+                    filtered_emails = []
+                    for email in email_matches:
+                        if not email.endswith(("wixpres.com", ".png", ".html")):
+                            filtered_emails.append(email)
+                    if filtered_emails:
+                        email_addresses[url] = filtered_emails
+                    else:
+                        email_addresses[url] = ['Email not found']
                 else:
-                    email_addresses[url] = ['Email not found']  # Add placeholder for email not found
+                    email_addresses[url] = ['Email not found']
         except requests.exceptions.RequestException as e:
             st.write(f"Error retrieving content from {url}: {e}")
         if i == MAX_URLS:
