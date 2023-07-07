@@ -77,7 +77,7 @@ def find_email_addresses(urls):
                 if email_matches:
                     filtered_emails = []
                     for email in email_matches:
-                        if not email.endswith(("wixpres.com", ".png", ".html")):
+                        if not email.endswith(("wixpress.com", "sentry.io", ".png", ".html")):
                             filtered_emails.append(email)
                     if filtered_emails:
                         email_addresses[url] = filtered_emails
