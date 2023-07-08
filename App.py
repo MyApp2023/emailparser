@@ -167,4 +167,4 @@ if st.session_state.signed_in:
                 for email in email_list:
                     st.write(f"- {email}")
         else:
-            st.error("Missing API key or search engine ID.Please note that Streamlit does not natively support multiple pages or navigation between pages. However, you can achieve a similar effect by using conditional statements and show/hide elements based on the authentication status.
+            st.error("Missing API key or search engine ID. Please check the configuration.")
