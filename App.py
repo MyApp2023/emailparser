@@ -100,25 +100,33 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 # Main program
 st.title("Email Parser")
 
-# Prompt for password input
-password_key = get_unique_key()
-password = st.text_input("Please enter password:", key=password_key)
-password = password[:30]  # Limit password length to 30 characters
-
-# Sign in button
-sign_in_button_key = get_unique_key()
-sign_in = st.button("Sign In", key=sign_in_button_key)
-
-# Track sign-in status using session state
+# Page 1: Authentication
 if 'signed_in' not in st.session_state:
     st.session_state.signed_in = False
 
-# Authenticate user
-if sign_in and password and verify_password(password):
-    st.session_state.signed_in = True
+if not st.session_state.signed_in:
+    st.header("Authentication")
 
+    # Prompt for password input
+    password_key = get_unique_key()
+    password = st.text_input("Please enter password:", key=password_key)
+    password = password[:30]  # Limit password length to 30 characters
+
+    # Sign in button
+    sign_in_button_key = get_unique_key()
+    sign_in = st.button("Sign In", key=sign_in_button_key)
+
+    # Authenticate user
+    if sign_in and password and verify_password(password):
+        st.session_state.signed_in = True
+        st.success("Authentication successful!")
+    elif sign_in and password:
+        st.warning("Authentication failed. Please try again.")
+        lock_user()
+
+# Page 2: Email Parser
 if st.session_state.signed_in:
-    st.success("Authentication successful!")
+    st.header("Email Parser")
 
     # Prompt for search input
     search_query_key = get_unique_key()
@@ -159,13 +167,4 @@ if st.session_state.signed_in:
                 for email in email_list:
                     st.write(f"- {email}")
         else:
-            st.error("Missing API key or search engine ID. Please check the configuration.")
-else:
-    if is_user_locked():
-        st.error("Too many failed login attempts. Please try again later.")
-    elif sign_in and password:
-        st.warning("Authentication failed. Please try again.")
-        lock_user()
-
-# Reset widget keys to avoid duplicate key issue when rerunning the app
-widget_counter = 0
+            st.error("Missing API key or search engine ID.Please note that Streamlit does not natively support multiple pages or navigation between pages. However, you can achieve a similar effect by using conditional statements and show/hide elements based on the authentication status.
