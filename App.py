@@ -135,7 +135,7 @@ if st.session_state.signed_in:
     num_results = st.number_input("How many URLs do you want to get?", min_value=1, max_value=MAX_URLS, step=1, value=1, key=num_results_key)
 
     max_emails_key = get_unique_key()
-    max_emails = st.number_input("Maximum number of emails to extract from each URL:", min_value=1, max_value=100, step=1, value=10, key=max_emails_key)
+    max_emails = st.number_input("Maximum number of emails to extract from each URL:", min_value=1, max_value=100, step=1, value=2, key=max_emails_key)
 
     # Search and extract e-mails button
     search_emails_button_key = get_unique_key()
