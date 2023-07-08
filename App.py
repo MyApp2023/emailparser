@@ -4,6 +4,7 @@ import requests
 import re
 import hashlib
 import time
+from streamlit.report_thread import get_report_ctx
 
 MAX_ATTEMPTS = 10
 LOCK_DURATION = 10
@@ -91,33 +92,17 @@ def find_email_addresses(urls, max_emails):
             break
     return email_addresses
 
-# Read API keys and search engine ID from config.txt
-config = read_config_file()
-google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
-google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
-search_engine_id = config.get("SEARCH_ENGINE_ID", "")
+def authentication_page():
+    st.title("Email Parser")
+    password = st.text_input("Please enter password:", key="password_input")
+    sign_in = st.button("Sign In")
 
-# Main program
-st.title("Email Parser")
+    if sign_in and password and verify_password(password):
+        session_id = get_report_ctx().session_id
+        st.experimental_set_query_params(authenticated=True, session_id=session_id)
 
-# Prompt for password input
-password_key = get_unique_key()
-password = st.text_input("Please enter password:", key=password_key)
-password = password[:30]  # Limit password length to 30 characters
-
-# Sign in button
-sign_in_button_key = get_unique_key()
-sign_in = st.button("Sign In", key=sign_in_button_key)
-
-# Track sign-in status using session state
-if 'signed_in' not in st.session_state:
-    st.session_state.signed_in = False
-
-# Authenticate user
-if sign_in and password and verify_password(password):
-    st.session_state.signed_in = True
-
-if st.session_state.signed_in:
+def email_parser_page():
+    st.title("Email Parser")
     st.success("Authentication successful!")
 
     # Prompt for search input
@@ -160,12 +145,24 @@ if st.session_state.signed_in:
                     st.write(f"- {email}")
         else:
             st.error("Missing API key or search engine ID. Please check the configuration.")
-else:
-    if is_user_locked():
-        st.error("Too many failed login attempts. Please try again later.")
-    elif sign_in and password:
-        st.warning("Authentication failed. Please try again.")
-        lock_user()
 
-# Reset widget keys to avoid duplicate key issue when rerunning the app
-widget_counter = 0
+def main():
+    authenticated = st.experimental_get_query_params().get("authenticated", False)
+    session_id = st.experimental_get_query_params().get("session_id", "")
+
+    if authenticated:
+        if session_id == get_report_ctx().session_id:
+            email_parser_page()
+        else:
+            st.warning("Invalid session ID. Please authenticate.")
+    else:
+        authentication_page()
+
+# Read API keys and search engine ID from config.txt
+config = read_config_file()
+google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
+google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
+search_engine_id = config.get("SEARCH_ENGINE_ID", "")
+
+if __name__ == "__main__":
+    main()
