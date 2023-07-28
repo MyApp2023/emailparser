@@ -103,12 +103,61 @@ st.title("Email Parser")
 st.markdown(
     """
     <style>
-    %s
+    body {
+      background: linear-gradient(135deg, #072d57, #0e5e8c, #0078d4);
+      background-size: 200% 200%;
+      animation: gradient 10s ease infinite;
+    }
+
+    @keyframes gradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .matrix-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    .matrix-animation span {
+      position: absolute;
+      color: #00ff00;
+      font-size: 16px;
+      width: 15px;
+      opacity: 0;
+    }
+
+    .matrix-animation .falling {
+      animation: falling-animation 6s linear infinite;
+    }
+
+    @keyframes falling-animation {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
     </style>
-    """
-    % open("styles.css").read()
+    """,
+    unsafe_allow_html=True,
 )
 
+# Add background animation for Matrix-like effect
 st.markdown(
     """
     <div class="matrix-animation">
