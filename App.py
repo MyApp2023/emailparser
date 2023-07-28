@@ -101,19 +101,18 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 import streamlit as st
 
 # Define the CSS style with a blue gradient background for the h1 heading
-blue_gradient_style = """
+custom_css = """
 <style>
-.custom-title {
-  font-size: 48px;
-  background: linear-gradient(135deg, #0074D9, #00BFFF);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+h1 {
+  color: blue;
+  /* Add more custom styles here */
 }
 </style>
 """
 
-# Display the custom heading with the blue gradient style
-st.write(f'<h1 class="custom-title">Email Parser</h1>', unsafe_allow_html=True)
+# Display the h1 heading with the custom CSS style
+st.markdown(custom_css, unsafe_allow_html=True)
+st.title("Email Parser")
 
 
 # Prompt for password input
