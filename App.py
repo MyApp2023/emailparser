@@ -92,17 +92,17 @@ def find_email_addresses(urls, max_emails):
     return email_addresses
 
 
-background = """
-linear-gradient(180deg, #0000FF, #00FFFF)
+blue_gradient_background = """
+<style>
+    body {
+        background: linear-gradient(180deg, #0000FF, #00FFFF);
+        color: white;
+    }
+</style>
 """
 
-# Apply the blue gradient background using st.beta_set_page_config
-st.set_page_config(
-    page_title="Blue Gradient Background Streamlit App",
-    page_icon=":computer:",
-    layout="centered",
-    page_bg_img=background
-)
+# Apply the blue gradient background using st.markdown
+st.markdown(blue_gradient_background, unsafe_allow_html=True)
 
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
