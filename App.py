@@ -97,7 +97,7 @@ linear-gradient(180deg, #0000FF, #00FFFF)
 """
 
 # Apply the blue gradient background using st.beta_set_page_config
-st.beta_set_page_config(
+st._set_page_config(
     page_title="Blue Gradient Background Streamlit App",
     page_icon=":computer:",
     layout="centered",
