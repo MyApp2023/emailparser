@@ -91,27 +91,6 @@ def find_email_addresses(urls, max_emails):
             break
     return email_addresses
 
-st.set_page_config(page_title="Blue Gradient Background Streamlit App", page_icon=":computer:", layout="wide")
-
-# Apply blue gradient background for the whole Streamlit app and the browser window
-app_background_css = """
-<style>
-    body {
-        margin: 0;
-        background: linear-gradient(180deg, #0000FF 0%, #00FFFF 100%); /* Blue gradient background */
-        color: white; /* Set the text color to white to make it visible on a dark background */
-    }
-    
-    html {
-        height: 100%;
-        overflow: hidden;
-        background: linear-gradient(180deg, #0000FF 0%, #00FFFF 100%); /* Blue gradient background */
-    }
-</style>
-"""
-st.markdown(app_background_css, unsafe_allow_html=True)
-
-
 
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
