@@ -98,20 +98,6 @@ google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
 google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
-import streamlit as st
-
-# Define the CSS style with a blue gradient background for the h1 heading
-custom_css = """
-<style>
-h1 {
-  color: blue;
-  /* Add more custom styles here */
-}
-</style>
-"""
-
-# Display the h1 heading with the custom CSS style
-st.markdown(custom_css, unsafe_allow_html=True)
 st.title("Email Parser")
 
 
