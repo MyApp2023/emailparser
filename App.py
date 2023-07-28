@@ -92,27 +92,25 @@ def find_email_addresses(urls, max_emails):
     return email_addresses
 
 
-blue_gradient_background = """
-<style>
-    body {
-        background: linear-gradient(180deg, #0000FF, #00FFFF);
-        color: white;
-    }
-</style>
-"""
-
-# Apply the blue gradient background using st.markdown
-st.markdown(blue_gradient_background, unsafe_allow_html=True)
-
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
 google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
 google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
-# Main program
+blue_gradient_style = """
+<style>
+h1 {
+  background: linear-gradient(135deg, #0074D9, #00BFFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+</style>
+"""
+
+# Display the h1 heading with the blue gradient style
+st.markdown(blue_gradient_style, unsafe_allow_html=True)
 st.title("Email Parser")
-st.markdown('<style>h1 { color: blue; }</style>', unsafe_allow_html=True)  
 
 # Prompt for password input
 password_key = get_unique_key()
