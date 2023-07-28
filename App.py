@@ -91,6 +91,18 @@ def find_email_addresses(urls, max_emails):
             break
     return email_addresses
 
+st.set_page_config(page_title="Blue Background Streamlit App", page_icon=":computer:", layout="wide")
+
+# Apply blue background color for the whole Streamlit app
+app_background_css = """
+<style>
+    body {
+        background-color: #0000FF; /* Blue background color for the entire app */
+    }
+</style>
+"""
+st.markdown(app_background_css, unsafe_allow_html=True)
+
 
 # Read API keys and search engine ID from config.txt
 config = read_config_file()
