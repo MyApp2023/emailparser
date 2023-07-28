@@ -98,6 +98,9 @@ google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
 google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
+import streamlit as st
+
+# Define the CSS style with a blue gradient background for the h1 heading
 blue_gradient_style = """
 <style>
 .custom-title {
@@ -110,8 +113,8 @@ blue_gradient_style = """
 """
 
 # Display the custom heading with the blue gradient style
-st.markdown(blue_gradient_style, unsafe_allow_html=True)
-st.markdown('<h1 class="custom-title">Email Parser</h1>', unsafe_allow_html=True)
+st.write(f'<h1 class="custom-title">Email Parser</h1>', unsafe_allow_html=True)
+
 
 # Prompt for password input
 password_key = get_unique_key()
