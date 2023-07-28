@@ -100,6 +100,16 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 # Main program
 st.title("Email Parser")
 
+matrix_animation_path = "matrix_animation.html"
+
+# Function to display the Matrix animation
+def display_matrix_animation():
+    with open(matrix_animation_path, "r") as file:
+        html_code = file.read()
+    st.components.v1.html(html_code, height=400)  # Adjust the height as needed
+
+# Call the function to display the Matrix animation
+display_matrix_animation()
 
 # Prompt for password input
 password_key = get_unique_key()
