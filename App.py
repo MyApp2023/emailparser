@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit.components.v1 import html
 import googlemaps
 import requests
 import re
@@ -100,18 +99,6 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 # Main program
 st.title("Email Parser")
-
-matrix_animation_path = "matrix_animation.html"
-
-# Function to display the Matrix animation
-def display_matrix_animation():
-    with open(matrix_animation_path, "r") as file:
-        html_code = file.read()
-    st.components.v1.html(html_code, height=400)  # Adjust the height as needed
-
-st.set_page_config(page_title="Matrix Animation", page_icon=":computer:", layout="wide")
-# Call the function to display the Matrix animation
-display_matrix_animation()
 
 # Prompt for password input
 password_key = get_unique_key()
