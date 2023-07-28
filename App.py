@@ -100,6 +100,29 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 # Main program
 st.title("Email Parser")
 
+st.markdown(
+    """
+    <style>
+    %s
+    </style>
+    """
+    % open("styles.css").read()
+)
+
+st.markdown(
+    """
+    <div class="matrix-animation">
+      <span class="falling">0</span>
+      <span class="falling">1</span>
+      <span class="falling">1</span>
+      <span class="falling">0</span>
+      <!-- Add more '0's and '1's here as needed -->
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 # Prompt for password input
 password_key = get_unique_key()
 password = st.text_input("Please enter password:", key=password_key)
