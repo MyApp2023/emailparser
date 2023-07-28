@@ -100,7 +100,8 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 blue_gradient_style = """
 <style>
-h1 {
+.custom-title {
+  font-size: 48px;
   background: linear-gradient(135deg, #0074D9, #00BFFF);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -108,9 +109,9 @@ h1 {
 </style>
 """
 
-# Display the h1 heading with the blue gradient style
+# Display the custom heading with the blue gradient style
 st.markdown(blue_gradient_style, unsafe_allow_html=True)
-st.title("Email Parser")
+st.markdown('<h1 class="custom-title">Email Parser</h1>', unsafe_allow_html=True)
 
 # Prompt for password input
 password_key = get_unique_key()
