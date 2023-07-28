@@ -100,6 +100,7 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 # Main program
 st.title("Email Parser")
+st.markdown('<style>h1 { color: blue; }</style>', unsafe_allow_html=True)  
 
 # Prompt for password input
 password_key = get_unique_key()
