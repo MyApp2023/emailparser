@@ -109,6 +109,7 @@ def display_matrix_animation():
         html_code = file.read()
     st.components.v1.html(html_code, height=400)  # Adjust the height as needed
 
+st.set_page_config(page_title="Matrix Animation", page_icon=":computer:", layout="wide")
 # Call the function to display the Matrix animation
 display_matrix_animation()
 
