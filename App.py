@@ -148,8 +148,7 @@ if 'signed_in' not in st.session_state:
 # Authenticate user
 if sign_in and password and verify_password(password):
     st.session_state.signed_in = True
-
-if st.session_state.signed_in:
+    if st.session_state.signed_in:
     st.success("Authentication successful!")
 
     # Prompt for search input
