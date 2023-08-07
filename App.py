@@ -92,7 +92,7 @@ def find_email_addresses(urls, max_emails):
     return email_addresses
 
 
-# Read API keys and search engine ID from config.txt
+# Read API keys from config.txt
 config = read_config_file()
 google_maps_api_key = config.get("GOOGLE_MAPS_API_KEY", "")
 google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
