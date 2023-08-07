@@ -100,35 +100,11 @@ google_search_api_key = config.get("GOOGLE_SEARCH_API_KEY", "")
 search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 
-
 def home_page():
     st.title("Welcome to the App")
     st.subheader("App Description")
-    st.write("This app provides functionality for password verification, user locking, and retrieving place URLs. "
-             "Navigate to the 'Try it' page to use the app or view the 'Terms of Use' for more information.")
+    st.write("This app provides functionality for email parsing. Navigate to the 'Try it' page to use the app or view the 'Terms of Use' for more information.")
 def try_it_page():
-    st.title("Try it")
-    st.subheader("Use the App")
-    # Existing functionality for password verification and input fields
-    # ...
-def terms_of_use_page():
-    st.title("Terms of Use")
-    st.write("Terms of Use content goes here.")
-# Adding a sidebar for page navigation
-st.sidebar.title("Navigation")
-page = st.sidebar.selectbox("Choose a page", ["Home", "Try it", "Terms of Use"])
-
-# Rendering the selected page
-if page == "Home":
-    home_page()
-elif page == "Try it":
-    try_it_page()
-elif page == "Terms of Use":
-    terms_of_use_page()
-
-def try_it_page():
-    st.title("Try it")
-    st.subheader("Use the App")
     st.title("Email Parser")
 
 
@@ -148,8 +124,9 @@ if 'signed_in' not in st.session_state:
 # Authenticate user
 if sign_in and password and verify_password(password):
     st.session_state.signed_in = True
-    if st.session_state.signed_in:
-        st.success("Authentication successful!")
+
+if st.session_state.signed_in:
+    st.success("Authentication successful!")
 
     # Prompt for search input
     search_query_key = get_unique_key()
@@ -200,3 +177,17 @@ else:
 
 # Reset widget keys to avoid duplicate key issue when rerunning the app
 widget_counter = 0
+def terms_of_use_page():
+    st.title("Terms of Use")
+    st.write("Terms of Use content goes here.")
+# Adding a sidebar for page navigation
+st.sidebar.title("Navigation")
+page = st.sidebar.selectbox("Choose a page", ["Home", "Try it", "Terms of Use"])
+
+# Rendering the selected page
+if page == "Home":
+    home_page()
+elif page == "Try it":
+    try_it_page()
+elif page == "Terms of Use":
+    terms_of_use_page()
