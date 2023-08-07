@@ -155,10 +155,6 @@ if st.session_state.signed_in:
                     st.write(f"- {email}")
         else:
             st.error("Missing API key or search engine ID. Please check the configuration.")
-else:
-        st.error("Too many failed login attempts. Please try again later.")
-    elif sign_in and password:
-        st.warning("Authentication failed. Please try again.")
 
 # Reset widget keys to avoid duplicate key issue when rerunning the app
 widget_counter = 0
