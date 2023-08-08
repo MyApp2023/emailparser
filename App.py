@@ -79,15 +79,15 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 st.title("Email Parser")
 
 
-    num_results_key = get_unique_key()
-    num_results = st.number_input("How many URLs do you want to get?", min_value=1, max_value=MAX_URLS, step=1, value=1, key=num_results_key)
+num_results_key = get_unique_key()
+num_results = st.number_input("How many URLs do you want to get?", min_value=1, max_value=MAX_URLS, step=1, value=1, key=num_results_key)
 
-    max_emails_key = get_unique_key()
-    max_emails = st.number_input("Maximum number of emails to extract from each URL:", min_value=1, max_value=100, step=1, value=2, key=max_emails_key)
+max_emails_key = get_unique_key()
+max_emails = st.number_input("Maximum number of emails to extract from each URL:", min_value=1, max_value=100, step=1, value=2, key=max_emails_key)
 
     # Search and extract e-mails button
-    search_emails_button_key = get_unique_key()
-    search_emails = st.button("Search and extract e-mails", key=search_emails_button_key)
+search_emails_button_key = get_unique_key()
+search_emails = st.button("Search and extract e-mails", key=search_emails_button_key)
 
     if search_query and api_choice and num_results and search_emails:
         if api_choice == 'Google Businesses' and google_maps_api_key:
