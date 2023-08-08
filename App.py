@@ -26,12 +26,17 @@ def read_config_file():
             config[key] = value
     return config
 
+def verify_password(password):
+    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
     hashed_input = hashlib.sha256(password.encode()).hexdigest()
+    return hashed_password == hashed_input
 
+def lock_user():
     lock_time = int(time.time()) + LOCK_DURATION
     with open("lock.txt", "w") as lock_file:
         lock_file.write(str(lock_time))
 
+def is_user_locked():
     try:
         with open("lock.txt", "r") as lock_file:
             lock_time = int(lock_file.read())
@@ -110,6 +115,7 @@ if 'signed_in' not in st.session_state:
     st.session_state.signed_in = False
 
 # Authenticate user
+if sign_in and password and verify_password(password):
     st.session_state.signed_in = True
 
 if st.session_state.signed_in:
@@ -155,19 +161,12 @@ if st.session_state.signed_in:
                     st.write(f"- {email}")
         else:
             st.error("Missing API key or search engine ID. Please check the configuration.")
+else:
+    if is_user_locked():
+        st.error("Too many failed login attempts. Please try again later.")
+    elif sign_in and password:
+        st.warning("Authentication failed. Please try again.")
+        lock_user()
 
 # Reset widget keys to avoid duplicate key issue when rerunning the app
 widget_counter = 0
-
-page = st.sidebar.selectbox("Choose a page:", ["Home", "Try it", "Terms of Use"])
-
-if page == "Home":
-    st.title("Welcome to My Program")
-    st.write("This program allows you to do amazing things! Navigate to the 'Try it' page to explore the functionality or check out the 'Terms of Use' for legal information.")
-
-elif page == "Try it":
-    # Existing code for the main functionality goes here
-
-elif page == "Terms of Use":
-    st.title("Terms of Use")
-    st.write("Please read the terms of use carefully. [Add your terms here]")
