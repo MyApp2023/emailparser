@@ -78,16 +78,6 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 st.title("Email Parser")
 
-    # Prompt for search input
-    search_query_key = get_unique_key()
-    search_query = st.text_input("Enter the search string:", key=search_query_key)
-
-    api_choice_key = get_unique_key()
-    api_choice = st.selectbox(
-        "Select to use Google Businesses or Google Search:",
-        ('Google Businesses', 'Google Search'),
-        key=api_choice_key
-    )
 
     num_results_key = get_unique_key()
     num_results = st.number_input("How many URLs do you want to get?", min_value=1, max_value=MAX_URLS, step=1, value=1, key=num_results_key)
