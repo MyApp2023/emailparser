@@ -5,6 +5,8 @@ import re
 import hashlib
 import time
 
+MAX_ATTEMPTS = 10
+LOCK_DURATION = 10
 MAX_URLS = 50
 
 # Counter for generating unique widget keys
@@ -23,6 +25,26 @@ def read_config_file():
             key, value = line.strip().split("=")
             config[key] = value
     return config
+
+def verify_password(password):
+    hashed_password = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  #admin
+    hashed_input = hashlib.sha256(password.encode()).hexdigest()
+    return hashed_password == hashed_input
+
+def lock_user():
+    lock_time = int(time.time()) + LOCK_DURATION
+    with open("lock.txt", "w") as lock_file:
+        lock_file.write(str(lock_time))
+
+def is_user_locked():
+    try:
+        with open("lock.txt", "r") as lock_file:
+            lock_time = int(lock_file.read())
+            if lock_time > int(time.time()):
+                return True
+    except FileNotFoundError:
+        pass
+    return False
 
 def get_place_urls(query, num_results, api_key):
     gmaps = googlemaps.Client(key=api_key)
@@ -78,45 +100,73 @@ search_engine_id = config.get("SEARCH_ENGINE_ID", "")
 
 st.title("Email Parser")
 
-# Prompt for search input
-search_query_key = get_unique_key()
-search_query = st.text_input("Enter the search string:", key=search_query_key)
 
-api_choice_key = get_unique_key()
-api_choice = st.selectbox(
-    "Select to use Google Businesses or Google Search:",
-    ('Google Businesses', 'Google Search'),
-    key=api_choice_key
+# Prompt for password input
+password_key = get_unique_key()
+password = st.text_input("Please enter password:", key=password_key)
+password = password[:30]  # Limit password length to 30 characters
+
+# Sign in button
+sign_in_button_key = get_unique_key()
+sign_in = st.button("Sign In", key=sign_in_button_key)
+
+# Track sign-in status using session state
+if 'signed_in' not in st.session_state:
+    st.session_state.signed_in = False
+
+# Authenticate user
+if sign_in and password and verify_password(password):
+    st.session_state.signed_in = True
+
+if st.session_state.signed_in:
+    st.success("Authentication successful!")
+
+    # Prompt for search input
+    search_query_key = get_unique_key()
+    search_query = st.text_input("Enter the search string:", key=search_query_key)
+
+    api_choice_key = get_unique_key()
+    api_choice = st.selectbox(
+        "Select to use Google Businesses or Google Search:",
+        ('Google Businesses', 'Google Search'),
+        key=api_choice_key
     )
-num_results_key = get_unique_key()
-num_results = st.number_input("How many URLs do you want to get?", min_value=1, max_value=MAX_URLS, step=1, value=1, key=num_results_key)
 
-max_emails_key = get_unique_key()
-max_emails = st.number_input("Maximum number of emails to extract from each URL:", min_value=1, max_value=100, step=1, value=2, key=max_emails_key)
+    num_results_key = get_unique_key()
+    num_results = st.number_input("How many URLs do you want to get?", min_value=1, max_value=MAX_URLS, step=1, value=1, key=num_results_key)
+
+    max_emails_key = get_unique_key()
+    max_emails = st.number_input("Maximum number of emails to extract from each URL:", min_value=1, max_value=100, step=1, value=2, key=max_emails_key)
 
     # Search and extract e-mails button
-search_emails_button_key = get_unique_key()
-search_emails = st.button("Search and extract e-mails", key=search_emails_button_key)
+    search_emails_button_key = get_unique_key()
+    search_emails = st.button("Search and extract e-mails", key=search_emails_button_key)
 
-if search_query and api_choice and num_results and search_emails:
-    if api_choice == 'Google Businesses' and google_maps_api_key:
-        st.info("Fetching URLs and e-mails using Google Places API...")
-        urls = get_place_urls(search_query, num_results, google_maps_api_key)
-        email_addresses = find_email_addresses(urls, max_emails)
-        for i, (url, email_list) in enumerate(email_addresses.items(), start=1):
-            st.write(f"\n{i}. {url}\n")
-            for email in email_list:
-                st.write(f"- {email}")
-    elif api_choice == 'Google Search' and google_search_api_key and search_engine_id:
-        st.info("Fetching URLs and e-mails using Google Custom Search API...")
-        urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
-        email_addresses = find_email_addresses(urls, max_emails)
-        for i, (url, email_list) in enumerate(email_addresses.items(), start=1):
-            st.write(f"\n{i}. {url}\n")
-            for email in email_list:
-                st.write(f"- {email}")
-    else:
-        st.error("Missing API key or search engine ID. Please check the configuration.")
+    if search_query and api_choice and num_results and search_emails:
+        if api_choice == 'Google Businesses' and google_maps_api_key:
+            st.info("Fetching URLs and e-mails using Google Places API...")
+            urls = get_place_urls(search_query, num_results, google_maps_api_key)
+            email_addresses = find_email_addresses(urls, max_emails)
+            for i, (url, email_list) in enumerate(email_addresses.items(), start=1):
+                st.write(f"\n{i}. {url}\n")
+                for email in email_list:
+                    st.write(f"- {email}")
+        elif api_choice == 'Google Search' and google_search_api_key and search_engine_id:
+            st.info("Fetching URLs and e-mails using Google Custom Search API...")
+            urls = get_search_results(search_query, num_results, google_search_api_key, search_engine_id)
+            email_addresses = find_email_addresses(urls, max_emails)
+            for i, (url, email_list) in enumerate(email_addresses.items(), start=1):
+                st.write(f"\n{i}. {url}\n")
+                for email in email_list:
+                    st.write(f"- {email}")
+        else:
+            st.error("Missing API key or search engine ID. Please check the configuration.")
+else:
+    if is_user_locked():
+        st.error("Too many failed login attempts. Please try again later.")
+    elif sign_in and password:
+        st.warning("Authentication failed. Please try again.")
+        lock_user()
 
 # Reset widget keys to avoid duplicate key issue when rerunning the app
 widget_counter = 0
